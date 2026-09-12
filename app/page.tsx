@@ -4,7 +4,6 @@ export default function Home() {
   return (
   <div>
     <ClerkProvider
-      // {...pageProps}
       appearance={{
         cssLayerName: 'clerk',
       }}
@@ -22,7 +21,6 @@ export default function Home() {
           <UserButton />
         </Show>
       </header>
-      {/* <Component {...pageProps} /> */}
     </ClerkProvider>
   </div>
   );

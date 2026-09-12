@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id          String   @id @default(cuid())
+  clerkUserId String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vault       Vault?
+  credentials Credential[]
+  shares      Share[]
+}
+
+model Vault {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Argon2id parameters + salt used to derive a key-encryption key (KEK)
+  // from the user's vault passphrase. Stored so the same params are used
+  // every time the vault is unlocked.
+  kdfSalt        String
+  kdfMemoryCost  Int
+  kdfTimeCost    Int
+  kdfParallelism Int
+
+  // The actual vault data-encryption key (DEK) is randomly generated once,
+  // then "wrapped" (AES-256-GCM encrypted) using the KEK derived above.
+  // The server only ever sees the wrapped (encrypted) key. Changing the
+  // vault passphrase only re-wraps this value with a new KEK -- it never
+  // requires touching or re-encrypting individual credentials.
+  wrappedVaultKey   String
+  wrappedVaultKeyIv String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Credential {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Site name, URL, username, password, and notes are bundled into one JSON
+  // object and AES-256-GCM encrypted client-side (using the vault DEK) before
+  // it ever reaches the server. The server stores and returns opaque bytes.
+  encryptedData String
+  iv            String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shares Share[]
+
+  @@index([userId])
+}
+
+model Share {
+  id           String     @id @default(cuid())
+  credentialId String
+  credential   Credential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Never store the raw share token or raw OTP -- only verifiers.
+  tokenHash   String @unique
+  otpVerifier String
+
+  // The share payload's encryption key is derived from the OTP via its own
+  // KDF + salt, kept separate from otpVerifier so that OTP *verification*
+  // and payload *decryption* can never be collapsed into the same secret.
+  encryptedPayload String
+  payloadIv        String
+  payloadSalt      String
+
+  expiresAt      DateTime
+  usedAt         DateTime?
+  revokedAt      DateTime?
+  failedAttempts Int       @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
