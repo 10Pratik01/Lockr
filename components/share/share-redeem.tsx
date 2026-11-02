@@ -5,6 +5,8 @@ import { api, ApiError } from "@/lib/api-client";
 import { openSharePayload, type SharePayload } from "@/lib/share/crypto";
 import { copySecret } from "@/lib/clipboard";
 import { Button, Card, ErrorText, Input, Label } from "@/components/ui/primitives";
+import { Check, LockMark } from "@/components/ui/icons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type State = { kind: "enter" } | { kind: "gone" } | { kind: "revealed"; payload: SharePayload };
 
@@ -92,13 +94,16 @@ export function ShareRedeem({ token }: { token: string }) {
 
   return (
     <div className="mx-auto w-full max-w-md px-4 py-16">
-      <Card className="p-8">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-100 text-2xl dark:bg-violet-950">
-          🔐
+      <Card className="enter p-8">
+        <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-zinc-200 text-l-cipher dark:bg-zinc-800">
+          <LockMark width={26} height={26} />
         </div>
 
         {state.kind === "enter" && linkKey === undefined && (
-          <p className="text-center text-sm text-zinc-500">Loading…</p>
+          <div className="space-y-3" role="status" aria-label="Loading">
+            <Skeleton className="mx-auto h-5 w-2/3" />
+            <Skeleton className="h-11 w-full rounded-lg" />
+          </div>
         )}
 
         {state.kind === "enter" && linkKey && (
@@ -150,7 +155,7 @@ export function ShareRedeem({ token }: { token: string }) {
 
         {state.kind === "revealed" && (
           <>
-            <h1 className="text-center text-xl font-semibold text-emerald-600">Credential Shared Successfully</h1>
+            <h1 className="text-center text-xl font-semibold text-l-cipher">Credential Shared Successfully</h1>
             <dl className="mt-6 space-y-4 text-sm">
               <Field label="Website">{state.payload.url || state.payload.site}</Field>
               {state.payload.username && <Field label="Username">{state.payload.username}</Field>}
@@ -179,9 +184,12 @@ export function ShareRedeem({ token }: { token: string }) {
               <Button onClick={() => copy(state.payload.password, "Password")}>Copy password</Button>
             </div>
             {copied.length > 0 && (
-              <ul className="mt-3 space-y-1 text-sm text-emerald-600">
+              <ul className="mt-3 space-y-1 text-sm text-l-cipher">
                 {copied.map((c) => (
-                  <li key={c}>✓ {c} copied to clipboard</li>
+                  <li key={c} className="enter flex items-center gap-1.5">
+                    <Check width={15} height={15} />
+                    {c} copied to clipboard
+                  </li>
                 ))}
               </ul>
             )}

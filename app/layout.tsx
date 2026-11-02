@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
@@ -10,6 +10,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const display = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
 });
 
@@ -26,14 +31,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Wraps the whole app so every page (dashboard, vault, settings)
             gets the Clerk session, not just the landing page. `dynamic`
             makes Clerk stamp its <script> with the per-request CSP nonce
             from proxy.ts -- without it 'strict-dynamic' blocks clerk-js. */}
-        <ClerkProvider dynamic appearance={{ cssLayerName: "clerk" }}>
+        <ClerkProvider dynamic appearance={{
+            cssLayerName: "clerk",
+            variables: { colorPrimary: "#2f4d73", borderRadius: "0.75rem" },
+          }}>
           {children}
         </ClerkProvider>
       </body>

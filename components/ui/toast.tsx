@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, Close } from "./icons";
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
 type Tone = "success" | "error" | "info";
@@ -34,14 +35,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role="status"
-            className={`animate-in rounded-lg px-4 py-2.5 text-sm font-medium shadow-lg ${
-              t.tone === "error"
-                ? "bg-red-600 text-white"
-                : t.tone === "info"
-                  ? "bg-zinc-800 text-white"
-                  : "bg-emerald-600 text-white"
+            className={`toast flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-medium shadow-[0_12px_32px_-12px_rgba(22,25,31,0.5)] ${
+              t.tone === "error" ? "bg-red-600 text-white" : "bg-l-fg text-l-bg"
             }`}
           >
+            {t.tone === "error" ? <Close width={16} height={16} /> : <Check width={16} height={16} />}
             {t.message}
           </div>
         ))}

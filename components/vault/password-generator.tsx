@@ -20,13 +20,14 @@ const CLASSES: { name: CharsetName; label: string }[] = [
 
 export function PasswordGenerator({ onUse }: { onUse: (password: string) => void }) {
   const [options, setOptions] = useState<PasswordOptions>(DEFAULT_PASSWORD_OPTIONS);
+  const [preview, setPreview] = useState("");
   const noneSelected = CLASSES.every((c) => !options[c.name]);
 
   return (
-    <div className="space-y-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="space-y-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
       <div className="flex items-center gap-3">
-        <label htmlFor="pw-length" className="w-24 text-sm">
-          Length: {options.length}
+        <label htmlFor="pw-length" className="text-sm">
+          Length <span className="inline-block w-6 font-mono tabular-nums">{options.length}</span>
         </label>
         <input
           id="pw-length"
@@ -42,7 +43,7 @@ export function PasswordGenerator({ onUse }: { onUse: (password: string) => void
       </div>
       <div className="grid grid-cols-2 gap-2">
         {CLASSES.map((c) => (
-          <label key={c.name} className="flex items-center gap-2 text-sm">
+          <label key={c.name} className="flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
               className="accent-violet-600"
@@ -53,9 +54,25 @@ export function PasswordGenerator({ onUse }: { onUse: (password: string) => void
           </label>
         ))}
       </div>
-      <Button size="sm" variant="secondary" disabled={noneSelected} onClick={() => onUse(generatePassword(options))}>
-        Generate
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={noneSelected}
+          onClick={() => {
+            const pw = generatePassword(options);
+            setPreview(pw);
+            onUse(pw);
+          }}
+        >
+          {preview ? "Generate another" : "Generate"}
+        </Button>
+        {preview && (
+          <code key={preview} className="enter min-w-0 flex-1 truncate font-mono text-[13px] text-l-cipher">
+            {preview}
+          </code>
+        )}
+      </div>
     </div>
   );
 }

@@ -54,3 +54,6 @@ prisma-next.md
 /task.md
 # Clerk keyless dev mode writes temporary secret keys here
 /.clerk
+/product.md
+/claude.md
+/agents.md

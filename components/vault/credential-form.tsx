@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { credentialSchema, type CredentialData, type DecryptedCredential } from "@/lib/vault/credential";
 import { Button, ErrorText, Input, Label } from "@/components/ui/primitives";
+import { Eye, EyeOff, Refresh } from "@/components/ui/icons";
 import { PasswordGenerator } from "./password-generator";
 import { useVault } from "./vault-provider";
 import { useToast } from "@/components/ui/toast";
@@ -62,28 +63,38 @@ export function CredentialForm({
       </div>
       <div>
         <Label htmlFor="password">Password</Label>
-        <div className="flex gap-2">
+        <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
             value={data.password}
             onChange={(e) => set("password")(e.target.value)}
-            className="font-mono"
+            className="pr-12 font-mono"
           />
-          <Button variant="secondary" onClick={() => setShowPassword((s) => !s)} aria-label="Toggle password visibility">
-            {showPassword ? "Hide" : "Show"}
-          </Button>
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            className="absolute top-1/2 right-1.5 inline-flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
+            <span key={String(showPassword)} className="swap">
+              {showPassword ? <EyeOff /> : <Eye />}
+            </span>
+          </button>
         </div>
         <button
           type="button"
           onClick={() => setShowGenerator((s) => !s)}
-          className="mt-2 cursor-pointer text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
+          aria-expanded={showGenerator}
+          className="mt-2.5 inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-violet-600 hover:underline dark:text-violet-300"
         >
-          {showGenerator ? "Hide generator" : "Generate secure password"}
+          <Refresh width={15} height={15} />
+          {showGenerator ? "Hide generator" : "Generate a strong password"}
         </button>
         {showGenerator && (
-          <div className="mt-2">
+          <div className="enter mt-3">
             <PasswordGenerator
               onUse={(pw) => {
                 set("password")(pw);
@@ -100,7 +111,7 @@ export function CredentialForm({
           rows={3}
           value={data.notes}
           onChange={(e) => set("notes")(e.target.value)}
-          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 dark:border-zinc-700 dark:bg-zinc-900"
+          className="w-full rounded-lg border border-zinc-300 bg-l-card px-3 py-2.5 text-sm transition-shadow focus:border-violet-600 focus:outline-none focus:ring-4 focus:ring-violet-600/15 dark:border-zinc-700"
         />
       </div>
       <ErrorText>{error}</ErrorText>

@@ -8,6 +8,7 @@ import { CredentialForm } from "./credential-form";
 import { ShareDialogBody } from "@/components/share/share-dialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Button, Card } from "@/components/ui/primitives";
+import { ArrowLeft, Check, Copy, Eye, EyeOff, External, Pencil, Share, Trash } from "@/components/ui/icons";
 import { useToast } from "@/components/ui/toast";
 import { copySecret, CLIPBOARD_CLEAR_SECONDS } from "@/lib/clipboard";
 
@@ -24,8 +25,9 @@ export function CredentialDetails({ id }: { id: string }) {
     return (
       <Card className="py-12 text-center">
         <p className="font-medium">Credential not found</p>
-        <Link href="/dashboard" className="mt-3 inline-block text-sm text-violet-600 hover:underline">
-          ← Back to vault
+        <Link href="/dashboard" className="mt-3 inline-flex items-center gap-1.5 text-sm text-violet-600 hover:underline">
+          <ArrowLeft width={15} height={15} />
+          Back to vault
         </Link>
       </Card>
     );
@@ -54,30 +56,35 @@ export function CredentialDetails({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
-      <Link href="/dashboard" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
-        ← Back to vault
+      <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-l-fg">
+        <ArrowLeft width={15} height={15} />
+        Back to vault
       </Link>
-      <Card className="p-6">
+      <Card className="enter p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="text-2xl font-semibold">{credential.site}</h1>
+          <h1 className="font-display text-3xl font-medium tracking-tight">{credential.site}</h1>
           <div className="flex gap-2">
             <Button size="sm" variant="secondary" onClick={() => setModal("share")}>
-              Share
+              <Share width={15} height={15} />
+              Share once
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setModal("edit")}>
+              <Pencil width={15} height={15} />
               Edit
             </Button>
             <Button size="sm" variant="danger" onClick={() => setModal("delete")}>
+              <Trash width={15} height={15} />
               Delete
             </Button>
           </div>
         </div>
 
-        <dl className="mt-6 grid gap-5 sm:grid-cols-2">
+        <dl className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
           <Row label="Website URL">
             {credential.url ? (
-              <a href={credential.url} target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:underline">
+              <a href={credential.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-violet-600 hover:underline dark:text-violet-300">
                 {credential.url}
+                <External width={14} height={14} className="shrink-0" />
               </a>
             ) : (
               <span className="text-zinc-400">—</span>
@@ -85,23 +92,25 @@ export function CredentialDetails({ id }: { id: string }) {
           </Row>
           <Row label="Username / Email">
             <span>{credential.username || <span className="text-zinc-400">—</span>}</span>
-            {credential.username && <CopyLink onClick={() => copy(credential.username, "Username")} />}
+            {credential.username && <CopyButton onClick={() => copy(credential.username, "Username")} label="Copy username" />}
           </Row>
           <Row label="Password">
             <span className="font-mono">{revealed ? credential.password : "••••••••••••"}</span>
-            <button
-              type="button"
+            <IconButton
+              label={revealed ? "Hide password" : "Reveal password"}
               onClick={() => setRevealed((r) => !r)}
-              className="ml-2 cursor-pointer text-xs text-violet-600 hover:underline"
+              swapKey={String(revealed)}
             >
-              {revealed ? "Hide" : "Reveal"}
-            </button>
-            <CopyLink onClick={() => copy(credential.password, "Password")} />
+              {revealed ? <EyeOff width={16} height={16} /> : <Eye width={16} height={16} />}
+            </IconButton>
+            <CopyButton onClick={() => copy(credential.password, "Password")} label="Copy password" />
           </Row>
-          <Row label="Last updated">{new Date(credential.updatedAt).toLocaleString()}</Row>
+          <Row label="Last updated">
+            {new Date(credential.updatedAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
+          </Row>
           {credential.notes && (
             <div className="sm:col-span-2">
-              <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">Notes</dt>
+              <dt className="text-xs font-medium text-zinc-500">Notes</dt>
               <dd className="mt-1 whitespace-pre-wrap text-sm">{credential.notes}</dd>
             </div>
           )}
@@ -138,16 +147,50 @@ export function CredentialDetails({ id }: { id: string }) {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</dt>
+      <dt className="text-xs font-medium text-zinc-500">{label}</dt>
       <dd className="mt-1 flex flex-wrap items-center break-all text-sm">{children}</dd>
     </div>
   );
 }
 
-function CopyLink({ onClick }: { onClick: () => void }) {
+function IconButton({
+  label,
+  onClick,
+  swapKey,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  swapKey: string;
+  children: React.ReactNode;
+}) {
   return (
-    <button type="button" onClick={onClick} className="ml-2 cursor-pointer text-xs text-violet-600 hover:underline">
-      Copy
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="ml-1 inline-flex size-9 cursor-pointer items-center justify-center rounded-full text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+    >
+      <span key={swapKey} className="swap">
+        {children}
+      </span>
     </button>
+  );
+}
+
+function CopyButton({ onClick, label }: { onClick: () => void; label: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <IconButton
+      label={label}
+      swapKey={String(done)}
+      onClick={() => {
+        onClick();
+        setDone(true);
+        setTimeout(() => setDone(false), 1600);
+      }}
+    >
+      {done ? <Check width={16} height={16} /> : <Copy width={16} height={16} />}
+    </IconButton>
   );
 }

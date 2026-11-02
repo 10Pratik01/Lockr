@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { MAX_OTP_ATTEMPTS } from "@/lib/share/constants";
 import { useVault } from "@/components/vault/vault-provider";
 import { Card } from "@/components/ui/primitives";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ShareRow {
   id: string;
@@ -63,7 +64,11 @@ export function RecentActivity() {
       {failed ? (
         <p className="mt-2 text-sm text-red-600">Couldn&apos;t load activity.</p>
       ) : shares === null ? (
-        <p className="mt-2 text-sm text-zinc-500">Loading…</p>
+        <div className="mt-3 space-y-3" role="status" aria-label="Loading activity">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
       ) : events.length === 0 ? (
         <p className="mt-2 text-sm text-zinc-500">No sharing activity yet.</p>
       ) : (

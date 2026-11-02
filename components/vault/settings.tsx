@@ -12,22 +12,22 @@ export function Settings() {
   const { status } = useVault();
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+    <div className="enter space-y-10">
+      <h1 className="font-display text-3xl font-medium tracking-tight">Settings</h1>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Vault</h2>
+        <h2 className="font-display text-xl font-medium">Vault</h2>
         <AutoLockSetting />
         {status !== "no-vault" && status !== "loading" && <ChangePassphrase />}
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Security</h2>
+        <h2 className="font-display text-xl font-medium">Security</h2>
         <RecentActivity />
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Authentication</h2>
+        <h2 className="font-display text-xl font-medium">Authentication</h2>
         <p className="text-sm text-zinc-500">
           Email, password, passkeys and active sessions are managed by your account provider. Passkeys
           use your device&apos;s biometrics locally — fingerprint data never reaches Privault.
@@ -47,7 +47,7 @@ function AutoLockSetting() {
         id="auto-lock"
         value={autoLockMinutes}
         onChange={(e) => setAutoLockMinutes(Number(e.target.value))}
-        className="h-10 w-full max-w-xs rounded-lg border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="h-11 w-full max-w-xs rounded-lg border border-zinc-300 bg-l-card px-3 text-sm transition-shadow focus:border-violet-600 focus:outline-none focus:ring-4 focus:ring-violet-600/15 dark:border-zinc-700"
       >
         {AUTO_LOCK_OPTIONS.map((m) => (
           <option key={m} value={m}>
@@ -55,7 +55,7 @@ function AutoLockSetting() {
           </option>
         ))}
       </select>
-      <p className="mt-2 text-xs text-zinc-500">Saved on this device.</p>
+      <p className="mt-2 text-sm text-zinc-500">Saved on this device only.</p>
     </Card>
   );
 }

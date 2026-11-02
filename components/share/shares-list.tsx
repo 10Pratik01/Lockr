@@ -6,6 +6,7 @@ import { MAX_OTP_ATTEMPTS } from "@/lib/share/constants";
 import { useVault } from "@/components/vault/vault-provider";
 import { Button, Card, ErrorText } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
+import { ListSkeleton } from "@/components/ui/skeleton";
 
 interface ShareRow {
   id: string;
@@ -72,20 +73,20 @@ export function SharesList() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Shares</h1>
+        <h1 className="font-display text-3xl font-medium tracking-tight">Shares</h1>
         <p className="text-sm text-zinc-500">One-time links you&apos;ve created. Active links can be revoked.</p>
       </div>
       <ErrorText>{error}</ErrorText>
       {shares === null ? (
-        <p className="text-sm text-zinc-500">Loading…</p>
+        <ListSkeleton rows={3} />
       ) : shares.length === 0 ? (
         <Card className="py-12 text-center text-sm text-zinc-500">No shares yet. Use “Share” on a credential.</Card>
       ) : (
         <ul className="grid gap-3">
-          {shares.map((s) => {
+          {shares.map((s, idx) => {
             const status = statusOf(s, now);
             return (
-              <li key={s.id}>
+              <li key={s.id} className="enter" style={{ "--i": Math.min(idx, 10) } as React.CSSProperties}>
                 <Card className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="flex items-center gap-2">
