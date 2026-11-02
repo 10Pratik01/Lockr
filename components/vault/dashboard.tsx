@@ -107,7 +107,7 @@ export function Dashboard() {
       ) : filtered.length === 0 ? (
         <p className="py-10 text-center text-sm text-zinc-500">No credentials match “{query}”.</p>
       ) : (
-        <ul className="grid gap-3">
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-3">
           {filtered.map((c, i) => (
             <CredentialRow
               key={c.id}
@@ -194,7 +194,7 @@ function CredentialRow({
   }
 
   return (
-    <li className="enter" style={{ "--i": Math.min(index, 10) } as React.CSSProperties}>
+    <li className="enter min-w-0" style={{ "--i": Math.min(index, 10) } as React.CSSProperties}>
       <div className="group flex items-center gap-3 rounded-xl border border-zinc-200 bg-l-card p-3.5 transition-[border-color,transform] duration-200 hover:border-zinc-400 sm:p-4 dark:border-zinc-800 dark:hover:border-zinc-600">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-zinc-200 font-display text-lg text-l-cipher dark:bg-zinc-800">
           {c.site.charAt(0).toUpperCase()}
@@ -230,12 +230,14 @@ function CredentialRow({
               {revealed ? <EyeOff /> : <Eye />}
             </span>
           </button>
-          <Button size="sm" onClick={copyPassword} aria-label={`Copy password for ${c.site}`} className="hidden sm:inline-flex">
+          <span className="hidden sm:inline-flex">
+          <Button size="sm" onClick={copyPassword} aria-label={`Copy password for ${c.site}`}>
             <span key={String(copied)} className="swap inline-flex">
               {copied ? <Check width={15} height={15} /> : <Copy width={15} height={15} />}
             </span>
             {copied ? "Copied" : "Copy password"}
           </Button>
+          </span>
           <button
             type="button"
             onClick={copyPassword}

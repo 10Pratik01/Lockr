@@ -41,7 +41,7 @@ function PrimaryAction({ size = 'lg' }: { size?: 'sm' | 'lg' }) {
       ? 'h-12 px-7 text-base'
       : 'h-9 px-4 text-sm'
   const base =
-    'inline-flex cursor-pointer items-center rounded-full bg-l-fg font-medium text-l-bg transition-opacity hover:opacity-85'
+    'inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap rounded-full bg-l-fg font-medium text-l-bg transition-opacity hover:opacity-85'
   return (
     <>
       <Show when="signed-out">
@@ -51,7 +51,7 @@ function PrimaryAction({ size = 'lg' }: { size?: 'sm' | 'lg' }) {
       </Show>
       <Show when="signed-in">
         <Link href="/dashboard" className={`${base} ${cls}`}>
-          Open your vault
+          {size === 'sm' ? 'Open vault' : 'Open your vault'}
         </Link>
       </Show>
     </>
@@ -61,18 +61,18 @@ function PrimaryAction({ size = 'lg' }: { size?: 'sm' | 'lg' }) {
 export default function Home() {
   return (
     <div className="landing flex min-h-full flex-1 flex-col">
-      <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
-        <Link href="/" className="flex items-center gap-2 font-display text-xl tracking-tight">
+      <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-8">
+        <Link href="/" className="flex shrink-0 items-center gap-2 py-2 font-display text-xl tracking-tight">
           <Mark />
           Privault
         </Link>
-        <nav className="flex items-center gap-5 text-sm">
+        <nav className="flex min-w-0 items-center gap-3 text-sm sm:gap-5">
           <a href="#how" className="hidden text-l-muted hover:text-l-fg sm:inline">
             How sharing works
           </a>
           <Show when="signed-out">
             <SignInButton>
-              <button className="cursor-pointer text-l-muted hover:text-l-fg">Sign in</button>
+              <button className="cursor-pointer px-1 py-3 text-l-muted hover:text-l-fg">Sign in</button>
             </SignInButton>
           </Show>
           <PrimaryAction size="sm" />
@@ -103,7 +103,7 @@ export default function Home() {
               style={{ '--i': 2 } as React.CSSProperties}
             >
               <PrimaryAction />
-              <a href="#how" className="text-base text-l-fg underline decoration-l-line hover:decoration-l-fg">
+              <a href="#how" className="py-3 text-base text-l-fg underline decoration-l-line hover:decoration-l-fg">
                 See how a share works
               </a>
             </div>

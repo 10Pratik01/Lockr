@@ -21,18 +21,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-full flex-col">
       <header className="sticky top-0 z-30 border-b border-zinc-200 bg-l-bg/85 backdrop-blur dark:border-zinc-800">
-        <div className="mx-auto flex h-14 max-w-5xl items-center gap-4 px-4">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 sm:h-14 sm:flex-nowrap sm:py-0">
           <Link href="/dashboard" className="flex items-center gap-2 font-display text-lg tracking-tight">
             <LockMark width={20} height={20} />
             Privault
           </Link>
-          <nav className="flex gap-1" aria-label="Main">
+          <nav className="order-last -mx-1 flex w-full gap-1 overflow-x-auto sm:order-none sm:mx-0 sm:w-auto" aria-label="Main">
             {NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 aria-current={pathname === item.href ? "page" : undefined}
-                className={`rounded-full px-3.5 py-1.5 text-sm transition-colors ${
+                className={`rounded-full px-3.5 py-2.5 text-sm whitespace-nowrap transition-colors sm:py-1.5 ${
                   pathname === item.href
                     ? "bg-zinc-200 font-medium dark:bg-zinc-800"
                     : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -44,16 +44,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <div className="ml-auto flex items-center gap-3">
             {status === "unlocked" && (
-              <Button size="sm" variant="secondary" onClick={lock}>
+              <Button size="sm" variant="secondary" onClick={lock} aria-label="Lock vault">
                 <LockMark width={15} height={15} />
-                Lock vault
+                <span className="hidden sm:inline">Lock vault</span>
               </Button>
             )}
             <UserButton />
           </div>
         </div>
       </header>
-      <main key={pathname} className="enter mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
+      <main key={pathname} className="enter mx-auto w-full max-w-5xl min-w-0 flex-1 px-4 py-6 sm:py-8">{children}</main>
     </div>
   );
 }

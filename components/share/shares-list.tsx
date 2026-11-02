@@ -82,11 +82,11 @@ export function SharesList() {
       ) : shares.length === 0 ? (
         <Card className="py-12 text-center text-sm text-zinc-500">No shares yet. Use “Share” on a credential.</Card>
       ) : (
-        <ul className="grid gap-3">
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-3">
           {shares.map((s, idx) => {
             const status = statusOf(s, now);
             return (
-              <li key={s.id} className="enter" style={{ "--i": Math.min(idx, 10) } as React.CSSProperties}>
+              <li key={s.id} className="enter min-w-0" style={{ "--i": Math.min(idx, 10) } as React.CSSProperties}>
                 <Card className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="flex items-center gap-2">

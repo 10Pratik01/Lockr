@@ -61,10 +61,10 @@ export function CredentialDetails({ id }: { id: string }) {
         Back to vault
       </Link>
       <Card className="enter p-6 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="font-display text-3xl font-medium tracking-tight">{credential.site}</h1>
-          <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={() => setModal("share")}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <h1 className="min-w-0 font-display text-3xl font-medium tracking-tight break-words">{credential.site}</h1>
+          <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
+            <Button size="sm" variant="secondary" className="col-span-2" onClick={() => setModal("share")}>
               <Share width={15} height={15} />
               Share once
             </Button>
