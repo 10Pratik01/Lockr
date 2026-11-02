@@ -74,9 +74,11 @@ model Share {
   tokenHash   String @unique
   otpVerifier String
 
-  // The share payload's encryption key is derived from the OTP via its own
-  // KDF + salt, kept separate from otpVerifier so that OTP *verification*
-  // and payload *decryption* can never be collapsed into the same secret.
+  // otpVerifier is HMAC-SHA256(server pepper, tokenHash:otp) -- see
+  // lib/share/server.ts. The payload key is HKDF(linkKey, payloadSalt), where
+  // linkKey lives only in the share URL's #fragment and never reaches the
+  // server. OTP *verification* and payload *decryption* are fully separate:
+  // the server can gate access but can never decrypt (lib/share/crypto.ts).
   encryptedPayload String
   payloadIv        String
   payloadSalt      String
@@ -90,4 +92,15 @@ model Share {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// Fixed-window rate-limit counters. Lives in Postgres because serverless
+// instances share no memory. `key` is "<bucket>:<sha256(identifier)>" --
+// client IPs are hashed, never stored raw.
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+
+  @@index([windowStart])
 }

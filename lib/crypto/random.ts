@@ -33,7 +33,7 @@ export function toBase64Url(bytes: Uint8Array): string {
 
 /**
  * A share URL token: 256 bits of entropy. Only its hash is ever stored
- * (see lib/crypto/encryption.ts `hashToken`) -- this raw value goes
+ * (see lib/share/server.ts `hashShareToken`) -- this raw value goes
  * straight into the share link and nowhere else, including logs.
  */
 export function generateShareToken(): string {
@@ -41,16 +41,23 @@ export function generateShareToken(): string {
 }
 
 /**
- * A numeric OTP, generated without modulo bias: rejection-sampled so every
- * digit combination is equally likely (a plain `% 10` would skew low digits
- * slightly more likely, which matters when the whole space is only 10^6).
+ * A uniform integer in [0, max), rejection-sampled so there is no modulo
+ * bias (a plain `% max` makes low values slightly more likely whenever
+ * 2^32 isn't a multiple of max).
  */
-export function generateOtp(digits = 6): string {
-  const max = 10 ** digits;
+export function randomInt(max: number): number {
+  if (!Number.isInteger(max) || max <= 0 || max > 0x100000000) {
+    throw new RangeError("max must be an integer in (0, 2^32]");
+  }
   const limit = Math.floor(0x100000000 / max) * max;
   let value: number;
   do {
     value = getCrypto().getRandomValues(new Uint32Array(1))[0];
   } while (value >= limit);
-  return (value % max).toString().padStart(digits, "0");
+  return value % max;
+}
+
+/** A numeric OTP where every digit combination is equally likely. */
+export function generateOtp(digits = 6): string {
+  return randomInt(10 ** digits).toString().padStart(digits, "0");
 }

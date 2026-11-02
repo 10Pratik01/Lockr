@@ -4,7 +4,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 // allow global var in Node for dev hot reloads
-// eslint-disable-next-line no-var
 declare global {
   var db: PrismaClient | undefined;
   var pool: Pool | undefined;
@@ -15,8 +14,6 @@ const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error("DATABASE_URL environment variable is not set");
 }
-
-console.log(connectionString, "This is the connection string")
 
 // Create a connection pool with extended timeout settings for Neon
 const pool = global.pool ?? new Pool({ 
@@ -31,16 +28,13 @@ const pool = global.pool ?? new Pool({
 });
 
 // Add error handler to prevent unhandled pool errors
-pool.on('error', (err:any) => {
+pool.on('error', (err: Error) => {
   console.error('Unexpected pool error:', err);
 });
 
 if (process.env.NODE_ENV !== "production") {
   global.pool = pool;
 }
-
-// Create the adapter
-const adapter = new PrismaPg(pool);
 
 const createClient = () => new PrismaClient({
   adapter: new PrismaPg(pool),

@@ -1,0 +1,7 @@
+.next
+generated
+node_modules
+prisma/migrations
+package-lock.json
+# The build spec -- kept exactly as written
+README.md

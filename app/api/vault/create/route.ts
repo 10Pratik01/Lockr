@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { credentialInputSchema } from "@/lib/validation/vault";
+import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!(await checkRateLimit(RATE_LIMITS.credentialWrite, user.id))) {
+    return tooManyRequests(RATE_LIMITS.credentialWrite);
   }
 
   const body = await request.json().catch(() => null);

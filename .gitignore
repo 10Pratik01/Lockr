@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -50,3 +51,6 @@ dist/
 prisma-next.md
 .gitattributes
 /generated
+/task.md
+# Clerk keyless dev mode writes temporary secret keys here
+/.clerk
