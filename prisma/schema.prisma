@@ -83,6 +83,10 @@ model Share {
   payloadIv        String
   payloadSalt      String
 
+  // When true the whole row is deleted the moment the share is opened
+  // (instead of being kept as a "Used" record in the owner's history).
+  destroyOnOpen Boolean @default(false)
+
   expiresAt      DateTime
   usedAt         DateTime?
   revokedAt      DateTime?

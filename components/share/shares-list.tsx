@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/toast";
 interface ShareRow {
   id: string;
   credentialId: string;
+  destroyOnOpen: boolean;
   expiresAt: string;
   usedAt: string | null;
   revokedAt: string | null;
@@ -96,6 +97,7 @@ export function SharesList() {
                       {status === "Used" && s.usedAt
                         ? `opened ${new Date(s.usedAt).toLocaleString()}`
                         : `expires ${new Date(s.expiresAt).toLocaleString()}`}
+                      {s.destroyOnOpen && status === "Active" && " · deleted when opened"}
                       {s.failedAttempts > 0 && status !== "Used" && ` · ${s.failedAttempts} failed attempt(s)`}
                     </p>
                   </div>

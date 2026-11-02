@@ -11,7 +11,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { api, ApiError } from "@/lib/api-client";
+import { api } from "@/lib/api-client";
 import { createVaultKey, rewrapVaultKey, unlockVaultKey } from "@/lib/vault/keys";
 import {
   decryptCredential,
@@ -96,12 +96,12 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   const lastActivityRef = useRef(0);
 
   useEffect(() => {
-    api<{ vault: VaultKeyInput }>("/api/vault/key")
+    api<{ vault: VaultKeyInput | null }>("/api/vault/key")
       .then(({ vault }) => {
         setRecord(vault);
-        setStatus("locked");
+        setStatus(vault ? "locked" : "no-vault");
       })
-      .catch((err) => setStatus(err instanceof ApiError && err.status === 404 ? "no-vault" : "error"));
+      .catch(() => setStatus("error"));
   }, []);
 
   const lock = useCallback(() => {
@@ -175,7 +175,8 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 
   const changePassphrase = useCallback(async (current: string, next: string) => {
     // Re-fetch so we compare-and-swap against the key actually on the server.
-    const { vault } = await api<{ vault: VaultKeyInput }>("/api/vault/key");
+    const { vault } = await api<{ vault: VaultKeyInput | null }>("/api/vault/key");
+    if (!vault) throw new Error("Vault not set up");
     let dek: CryptoKey;
     try {
       dek = await unlockVaultKey(current, vault);

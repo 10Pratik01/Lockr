@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const parsed = shareCreateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
-  const { credentialId, expiresInMinutes, encryptedPayload, payloadIv, payloadSalt } = parsed.data;
+  const { credentialId, expiresInMinutes, destroyOnOpen, encryptedPayload, payloadIv, payloadSalt } = parsed.data;
 
   // Can only share your own credential -- same not-found for missing and
   // not-yours so ids can't be probed.
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
       encryptedPayload,
       payloadIv,
       payloadSalt,
+      destroyOnOpen,
       expiresAt,
     },
     select: { id: true, expiresAt: true },

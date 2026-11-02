@@ -43,9 +43,9 @@ async function createCredential(userId: string) {
   return ((await res.json()) as { credential: { id: string } }).credential.id;
 }
 
-async function createShare(userId: string, credentialId: string) {
+async function createShare(userId: string, credentialId: string, overrides: Record<string, unknown> = {}) {
   as(userId);
-  const res = await shareCreate.POST(json({ credentialId, ...SHARE_BODY }));
+  const res = await shareCreate.POST(json({ credentialId, ...SHARE_BODY, ...overrides }));
   expect(res.status).toBe(201);
   return ((await res.json()) as { share: { id: string; token: string; otp: string } }).share;
 }
@@ -138,7 +138,9 @@ describe("vault key", () => {
 
   it("can be set up once; a second setup cannot overwrite it", async () => {
     as("alice");
-    expect((await vaultKey.GET()).status).toBe(404);
+    const empty = await vaultKey.GET();
+    expect(empty.status).toBe(200);
+    expect(await empty.json()).toEqual({ vault: null });
     expect((await vaultKey.POST(json(record))).status).toBe(201);
     expect((await vaultKey.POST(json({ ...record, wrappedVaultKey: "ZXZpbA==" }))).status).toBe(409);
     expect((await (await vaultKey.GET()).json()).vault.wrappedVaultKey).toBe(record.wrappedVaultKey);
@@ -184,6 +186,63 @@ describe("sharing", () => {
     const credId = await createCredential("alice");
     const res = await shareCreate.POST(json({ credentialId: credId, ...SHARE_BODY, expiresInMinutes: 60 * 24 }));
     expect(res.status).toBe(400);
+  });
+
+  describe("destroy after open", () => {
+    const DESTROY = { expiresInMinutes: 1440, destroyOnOpen: true };
+
+    it("deletes the share row as soon as it is opened, and only the opener gets the payload", async () => {
+      const share = await createShare("alice", await createCredential("alice"), DESTROY);
+      expect(db.share._rows()[0].destroyOnOpen).toBe(true);
+      as(null);
+
+      const opened = await verify(share.token, share.otp);
+      expect(opened.status).toBe(200);
+      expect((await opened.json()).payload.encryptedPayload).toBe(SHARE_BODY.encryptedPayload);
+      expect(db.share._rows()).toHaveLength(0);
+
+      expect((await verify(share.token, share.otp)).status).toBe(410);
+    });
+
+    it("concurrent correct redemptions: exactly one succeeds, row is gone", async () => {
+      const share = await createShare("alice", await createCredential("alice"), DESTROY);
+      const results = await Promise.all(Array.from({ length: 10 }, () => verify(share.token, share.otp)));
+      expect(results.filter((r) => r.status === 200)).toHaveLength(1);
+      expect(db.share._rows()).toHaveLength(0);
+    });
+
+    it("still has a hard 24h expiry and disappears from the owner's list once opened", async () => {
+      const share = await createShare("alice", await createCredential("alice"), DESTROY);
+      const expiresAt = (db.share._rows()[0].expiresAt as Date).getTime();
+      expect(Math.abs(expiresAt - (Date.now() + 24 * 3600_000))).toBeLessThan(5_000);
+
+      await verify(share.token, share.otp);
+      as("alice");
+      expect((await (await shareList.GET()).json()).shares).toEqual([]);
+    });
+
+    it("wrong codes still lock it (and keep the row, with the payload wiped)", async () => {
+      const share = await createShare("alice", await createCredential("alice"), DESTROY);
+      for (let i = 0; i < 5; i++) await verify(share.token, wrongOtp(share.otp));
+      expect((await verify(share.token, share.otp)).status).toBe(410);
+      expect(db.share._rows()[0].encryptedPayload).toBe("");
+    });
+
+    it("rejects mixing destroyOnOpen with a preset expiry (and vice versa)", async () => {
+      const credId = await createCredential("alice");
+      const mixed = await shareCreate.POST(json({ credentialId: credId, ...SHARE_BODY, destroyOnOpen: true }));
+      expect(mixed.status).toBe(400);
+      const timed = await shareCreate.POST(
+        json({ credentialId: credId, ...SHARE_BODY, expiresInMinutes: 1440, destroyOnOpen: false })
+      );
+      expect(timed.status).toBe(400);
+    });
+
+    it("regular shares are kept as Used records, not deleted", async () => {
+      const share = await createShare("alice", await createCredential("alice"));
+      await verify(share.token, share.otp);
+      expect(db.share._rows()).toHaveLength(1);
+    });
   });
 
   it("works exactly once with the right OTP, and wipes the payload", async () => {

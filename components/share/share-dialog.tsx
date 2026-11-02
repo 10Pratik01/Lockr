@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { api } from "@/lib/api-client";
 import { sealSharePayload } from "@/lib/share/crypto";
-import { DEFAULT_SHARE_EXPIRY_MINUTES, SHARE_EXPIRY_MINUTES } from "@/lib/share/constants";
+import {
+  DEFAULT_SHARE_EXPIRY_MINUTES,
+  DESTROY_ON_OPEN_MAX_MINUTES,
+  SHARE_EXPIRY_MINUTES,
+} from "@/lib/share/constants";
 import type { DecryptedCredential } from "@/lib/vault/credential";
 import { Button, ErrorText, Label } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
@@ -12,18 +16,22 @@ interface Created {
   link: string;
   otp: string;
   expiresAt: string;
+  destroyOnOpen: boolean;
 }
+
+const DESTROY = "destroy";
 
 const expiryLabel = (m: number) => (m === 60 ? "1 hour" : `${m} minutes`);
 
 export function ShareDialogBody({ credential, onDone }: { credential: DecryptedCredential; onDone: () => void }) {
   const toast = useToast();
-  const [minutes, setMinutes] = useState<number>(DEFAULT_SHARE_EXPIRY_MINUTES);
+  const [choice, setChoice] = useState<string>(String(DEFAULT_SHARE_EXPIRY_MINUTES));
   const [created, setCreated] = useState<Created | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function create() {
+    const destroyOnOpen = choice === DESTROY;
     setError("");
     setBusy(true);
     try {
@@ -41,7 +49,8 @@ export function ShareDialogBody({ credential, onDone }: { credential: DecryptedC
           method: "POST",
           body: {
             credentialId: credential.id,
-            expiresInMinutes: minutes,
+            expiresInMinutes: destroyOnOpen ? DESTROY_ON_OPEN_MAX_MINUTES : Number(choice),
+            destroyOnOpen,
             encryptedPayload: sealed.encryptedPayload,
             payloadIv: sealed.payloadIv,
             payloadSalt: sealed.payloadSalt,
@@ -52,6 +61,7 @@ export function ShareDialogBody({ credential, onDone }: { credential: DecryptedC
         link: `${window.location.origin}/share/${share.token}#${sealed.linkKey}`,
         otp: share.otp,
         expiresAt: share.expiresAt,
+        destroyOnOpen,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't create share");
@@ -74,7 +84,15 @@ export function ShareDialogBody({ credential, onDone }: { credential: DecryptedC
       <div className="space-y-4">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Send the link and the code <strong>through different channels</strong> (e.g. link by email, code by
-          text). The link works once and expires at {new Date(created.expiresAt).toLocaleTimeString()}.
+          text).{" "}
+          {created.destroyOnOpen ? (
+            <>
+              The share is <strong>deleted the moment it&apos;s opened</strong> with the code. If nobody opens it, it
+              expires on {new Date(created.expiresAt).toLocaleString()}.
+            </>
+          ) : (
+            <>The link works once and expires at {new Date(created.expiresAt).toLocaleTimeString()}.</>
+          )}
         </p>
         <div>
           <Label>Share link</Label>
@@ -115,8 +133,8 @@ export function ShareDialogBody({ credential, onDone }: { credential: DecryptedC
         <Label htmlFor="expiry">Expires after</Label>
         <select
           id="expiry"
-          value={minutes}
-          onChange={(e) => setMinutes(Number(e.target.value))}
+          value={choice}
+          onChange={(e) => setChoice(e.target.value)}
           className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"
         >
           {SHARE_EXPIRY_MINUTES.map((m) => (
@@ -124,6 +142,7 @@ export function ShareDialogBody({ credential, onDone }: { credential: DecryptedC
               {expiryLabel(m)}
             </option>
           ))}
+          <option value={DESTROY}>Destroy after open (deleted as soon as it&apos;s opened)</option>
         </select>
       </div>
       <ErrorText>{error}</ErrorText>

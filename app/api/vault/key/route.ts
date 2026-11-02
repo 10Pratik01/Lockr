@@ -27,7 +27,8 @@ export async function GET() {
     select: VAULT_KEY_SELECT,
   });
 
-  if (!vault) return NextResponse.json({ error: "Vault not set up" }, { status: 404 });
+  // "No vault yet" is a normal state for a new account, not an error --
+  // 200 with null keeps it out of the browser console as a failed request.
   return NextResponse.json({ vault });
 }
 

@@ -10,7 +10,7 @@ import {
 import { fromBase64, toBase64 } from "@/lib/crypto/random";
 import type { VaultKeyInput } from "@/lib/validation/vault";
 
-export const MIN_PASSPHRASE_LENGTH = 12;
+export const MIN_PASSPHRASE_LENGTH = 6;
 
 async function deriveKek(passphrase: string, salt: Uint8Array, params: KdfParams) {
   const raw = await deriveKeyFromPassphrase(passphrase, salt, params);

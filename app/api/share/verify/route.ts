@@ -27,7 +27,14 @@ export async function POST(request: Request) {
 
   const share = await db.share.findFirst({
     where: { tokenHash, ...usable },
-    select: { id: true, otpVerifier: true, encryptedPayload: true, payloadIv: true, payloadSalt: true },
+    select: {
+      id: true,
+      otpVerifier: true,
+      destroyOnOpen: true,
+      encryptedPayload: true,
+      payloadIv: true,
+      payloadSalt: true,
+    },
   });
   if (!share) return gone();
 
@@ -52,11 +59,14 @@ export async function POST(request: Request) {
   }
 
   // Atomic one-time consume: of any concurrent correct requests, exactly
-  // one sees count === 1. The ciphertext is wiped in the same statement.
-  const consumed = await db.share.updateMany({
-    where: { id: share.id, ...usable },
-    data: { usedAt: now, encryptedPayload: "", failedAttempts: { decrement: 1 } },
-  });
+  // one sees count === 1. A destroy-on-open share is deleted outright;
+  // otherwise it is kept as a "Used" record with its ciphertext wiped.
+  const consumed = share.destroyOnOpen
+    ? await db.share.deleteMany({ where: { id: share.id, ...usable } })
+    : await db.share.updateMany({
+        where: { id: share.id, ...usable },
+        data: { usedAt: now, encryptedPayload: "", failedAttempts: { decrement: 1 } },
+      });
   if (consumed.count === 0) return gone();
 
   // Still ciphertext -- only the recipient's link fragment can decrypt it.

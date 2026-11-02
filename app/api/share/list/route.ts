@@ -15,6 +15,7 @@ export async function GET() {
     select: {
       id: true,
       credentialId: true,
+      destroyOnOpen: true,
       expiresAt: true,
       usedAt: true,
       revokedAt: true,

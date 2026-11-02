@@ -93,7 +93,7 @@ export function createFakeDb() {
   return {
     vault: model(() => ({}), ["userId"]),
     credential: model(() => ({})),
-    share: model(() => ({ usedAt: null, revokedAt: null, failedAttempts: 0 }), ["tokenHash"]),
+    share: model(() => ({ usedAt: null, revokedAt: null, failedAttempts: 0, destroyOnOpen: false }), ["tokenHash"]),
   };
 }
 
