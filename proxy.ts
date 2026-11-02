@@ -13,6 +13,8 @@ export default clerkMiddleware({
     directives: {
       // hash-wasm runs Argon2id as WebAssembly in the browser.
       'script-src': ["'wasm-unsafe-eval'"],
+      // Clerk's sign-in UI uses inline data: SVG backgrounds.
+      'img-src': ['data:'],
       'object-src': ["'none'"],
       'base-uri': ["'self'"],
       'form-action': ["'self'"],
