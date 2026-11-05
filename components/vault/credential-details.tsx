@@ -11,6 +11,7 @@ import { Button, Card } from "@/components/ui/primitives";
 import { ArrowLeft, Check, Copy, Eye, EyeOff, External, Pencil, Share, Trash } from "@/components/ui/icons";
 import { useToast } from "@/components/ui/toast";
 import { copySecret, CLIPBOARD_CLEAR_SECONDS } from "@/lib/clipboard";
+import { reportEvent } from "@/lib/audit-client";
 
 export function CredentialDetails({ id }: { id: string }) {
   const { credentials, remove } = useVault();
@@ -36,6 +37,7 @@ export function CredentialDetails({ id }: { id: string }) {
   async function copy(value: string, what: string) {
     try {
       await copySecret(value);
+      reportEvent(what === "Password" ? "credential.copy_password" : "credential.copy_username", id);
       toast(what === "Password" ? `Password copied — clears in ${CLIPBOARD_CLEAR_SECONDS}s` : `${what} copied`);
     } catch {
       toast("Copy failed", "error");
@@ -98,7 +100,10 @@ export function CredentialDetails({ id }: { id: string }) {
             <span className="font-mono">{revealed ? credential.password : "••••••••••••"}</span>
             <IconButton
               label={revealed ? "Hide password" : "Reveal password"}
-              onClick={() => setRevealed((r) => !r)}
+              onClick={() => {
+                if (!revealed) reportEvent("credential.view", id);
+                setRevealed((r) => !r);
+              }}
               swapKey={String(revealed)}
             >
               {revealed ? <EyeOff width={16} height={16} /> : <Eye width={16} height={16} />}

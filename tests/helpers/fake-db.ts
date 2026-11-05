@@ -67,8 +67,28 @@ function model(defaults: () => Row, unique: string[] = []) {
     async findUnique(args: { where?: Where; select?: Record<string, boolean> }) {
       return this.findFirst(args);
     },
-    async findMany({ where, select }: { where?: Where; select?: Record<string, boolean> }) {
-      return rows.filter((r) => matches(r, where)).map((r) => pick(r, select));
+    async findMany({
+      where,
+      select,
+      orderBy,
+      take,
+    }: {
+      where?: Where;
+      select?: Record<string, boolean>;
+      orderBy?: Record<string, "asc" | "desc">;
+      take?: number;
+    }) {
+      let hit = rows.filter((r) => matches(r, where));
+      if (orderBy) {
+        const [[field, dir]] = Object.entries(orderBy);
+        const sign = dir === "desc" ? -1 : 1;
+        // Stable: ties (same millisecond) keep insertion order, reversed for desc.
+        hit = hit
+          .map((r, i) => ({ r, i }))
+          .sort((a, b) => sign * (((a.r[field] as Date) > (b.r[field] as Date) ? 1 : (a.r[field] as Date) < (b.r[field] as Date) ? -1 : 0) || a.i - b.i))
+          .map(({ r }) => r);
+      }
+      return hit.slice(0, take).map((r) => pick(r, select));
     },
     async updateMany({ where, data }: { where?: Where; data: Row }) {
       const hit = rows.filter((r) => matches(r, where));
@@ -81,6 +101,9 @@ function model(defaults: () => Row, unique: string[] = []) {
       apply(row, data);
       return { ...row };
     },
+    async count({ where }: { where?: Where } = {}) {
+      return rows.filter((r) => matches(r, where)).length;
+    },
     async deleteMany({ where }: { where?: Where }) {
       const before = rows.length;
       rows = rows.filter((r) => !matches(r, where));
@@ -90,10 +113,19 @@ function model(defaults: () => Row, unique: string[] = []) {
 }
 
 export function createFakeDb() {
-  return {
+  const models = {
     vault: model(() => ({}), ["userId"]),
     credential: model(() => ({})),
+    passphraseResetRequest: model(() => ({ status: "PENDING", reason: null, decidedAt: null, decidedBy: null, expiresAt: null, completedAt: null })),
+    auditLog: model(() => ({})),
     share: model(() => ({ usedAt: null, revokedAt: null, failedAttempts: 0, destroyOnOpen: false }), ["tokenHash"]),
+  };
+  return {
+    ...models,
+    // No real rollback: the fake runs the callback against the same tables.
+    async $transaction<T>(fn: (tx: typeof models) => Promise<T>): Promise<T> {
+      return fn(models);
+    },
   };
 }
 

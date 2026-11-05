@@ -7,16 +7,16 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model User {
   id          String   @id @default(cuid())
   clerkUserId String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  vault       Vault?
-  credentials Credential[]
-  shares      Share[]
+  vault         Vault?
+  credentials   Credential[]
+  shares        Share[]
+  resetRequests PassphraseResetRequest[]
 }
 
 model Vault {
@@ -107,4 +107,58 @@ model RateLimit {
   windowStart DateTime
 
   @@index([windowStart])
+}
+
+enum ResetStatus {
+  PENDING
+  APPROVED
+  DENIED
+  COMPLETED
+  CANCELLED
+}
+
+// A user who forgot their vault passphrase asks an admin for permission to
+// reset it. The vault is zero-knowledge, so approval cannot recover anything:
+// it only authorises wiping the vault key + credentials so the user can start
+// a fresh vault (see app/api/vault/reset).
+model PassphraseResetRequest {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status ResetStatus @default(PENDING)
+  // Optional note from the user, shown to the admin.
+  reason String?
+
+  createdAt   DateTime  @default(now())
+  decidedAt   DateTime?
+  // User.id of the admin who approved/denied.
+  decidedBy   String?
+  // An approval is only usable until this time.
+  expiresAt   DateTime?
+  completedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+}
+
+// Append-only activity trail. No foreign key on purpose: history must outlive
+// the account it describes. Never store secrets, ciphertext or IPs here --
+// `detail` is a short human label.
+model AuditLog {
+  id       String  @id @default(cuid())
+  // Account the event is about.
+  userId   String
+  // Who performed it, when different from userId (admin actions).
+  actorId  String?
+  action   String
+  // Credential / share / request id the action touched.
+  targetId String?
+  detail   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@index([action, createdAt])
 }

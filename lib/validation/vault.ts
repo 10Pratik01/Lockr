@@ -13,6 +13,12 @@ export const credentialInputSchema = z.object({
  
 export type CredentialInput = z.infer<typeof credentialInputSchema>;
 
+// CSV import uploads in batches; the client chunks to IMPORT_BATCH_SIZE.
+export const IMPORT_BATCH_SIZE = 100;
+export const credentialImportSchema = z.object({
+  items: z.array(credentialInputSchema).min(1).max(IMPORT_BATCH_SIZE),
+});
+
 const base64 = (max: number) =>
   z.string().min(1).max(max).regex(/^[A-Za-z0-9+/]+={0,2}$/);
 

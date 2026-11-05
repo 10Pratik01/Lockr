@@ -17,6 +17,12 @@ export const RATE_LIMITS = {
   shareCreate: { bucket: "share-create", limit: 30, windowSeconds: 3600 },
   vaultKeyWrite: { bucket: "vault-key", limit: 10, windowSeconds: 3600 },
   credentialWrite: { bucket: "credential-write", limit: 120, windowSeconds: 60 },
+  // One request per 100 rows, so 60/hour allows ~6000 rows.
+  credentialImport: { bucket: "credential-import", limit: 60, windowSeconds: 3600 },
+  resetRequest: { bucket: "reset-request", limit: 5, windowSeconds: 3600 },
+  resetExecute: { bucket: "reset-execute", limit: 5, windowSeconds: 3600 },
+  adminAction: { bucket: "admin-action", limit: 60, windowSeconds: 60 },
+  auditEvent: { bucket: "audit-event", limit: 60, windowSeconds: 60 },
 } satisfies Record<string, RateLimitRule>;
 
 /** Best-effort client IP. On Vercel, x-forwarded-for is set by the platform. */

@@ -3,6 +3,7 @@ import { db } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { credentialInputSchema } from "@/lib/validation/vault";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -54,6 +55,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   });
 
   if (count === 0) return notFound();
+  await logAudit(user.id, "credential.update", { targetId: id });
 
   const credential = await db.credential.findFirst({
     where: { id, userId: user.id },
@@ -63,7 +65,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   return NextResponse.json({ credential });
 }
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export async function DELETE(request: Request, { params }: RouteContext) {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
   if (!(await checkRateLimit(RATE_LIMITS.credentialWrite, user.id))) {
@@ -77,5 +79,6 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
   });
 
   if (count === 0) return notFound();
+  await logAudit(user.id, "credential.delete", { targetId: id });
   return NextResponse.json({ success: true });
 }

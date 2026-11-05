@@ -5,6 +5,7 @@ import { useVault } from "./vault-provider";
 import { Button, Card, ErrorText, Input, Label } from "@/components/ui/primitives";
 import { Eye, EyeOff, LockMark } from "@/components/ui/icons";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
+import { ResetRequest } from "./reset-request";
 import { MIN_PASSPHRASE_LENGTH } from "@/lib/vault/keys";
 
 /** Renders children only while the vault is unlocked. */
@@ -158,6 +159,7 @@ function SetupForm() {
 
 function UnlockForm() {
   const { unlock } = useVault();
+  const [forgot, setForgot] = useState(false);
   const [passphrase, setPassphrase] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -173,15 +175,6 @@ function UnlockForm() {
       setBusy(false);
     }
   }
-function Mark() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4" y="10.5" width="16" height="10" rx="2.5" stroke="currentColor" strokeWidth="1.75" />
-      <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-      <circle cx="12" cy="15.5" r="1.4" fill="currentColor" />
-    </svg>
-  )
-}
 
   return (
     <Centered>
@@ -204,6 +197,15 @@ function Mark() {
             {busy ? "Unlocking…" : "Unlock vault"}
           </Button>
         </form>
+        <div className="mt-5 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          {forgot ? (
+            <ResetRequest />
+          ) : (
+            <button type="button" onClick={() => setForgot(true)} className="cursor-pointer text-sm text-zinc-500 underline-offset-2 hover:underline">
+              Forgot your passphrase?
+            </button>
+          )}
+        </div>
       </Card>
     </Centered>
   );

@@ -3,6 +3,7 @@ import { db } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { credentialInputSchema } from "@/lib/validation/vault";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -31,5 +32,6 @@ export async function POST(request: Request) {
     select: { id: true, encryptedData: true, iv: true, createdAt: true, updatedAt: true },
   });
 
+  await logAudit(user.id, "credential.create", { targetId: credential.id });
   return NextResponse.json({ credential }, { status: 201 });
 }

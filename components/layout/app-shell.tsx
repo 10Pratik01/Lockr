@@ -7,6 +7,7 @@ import { UserButton } from "@clerk/nextjs";
 import { useVault } from "@/components/vault/vault-provider";
 import { Button } from "@/components/ui/primitives";
 import { LockMark } from "@/components/ui/icons";
+import { useAdminPending } from "@/components/admin/use-admin-pending";
 
 const NAV = [
   { href: "/dashboard", label: "Vault" },
@@ -14,9 +15,11 @@ const NAV = [
   { href: "/settings", label: "Settings" },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, isAdmin }: { children: ReactNode; isAdmin: boolean }) {
   const pathname = usePathname();
   const { status, lock } = useVault();
+  const pending = useAdminPending(isAdmin);
+  const nav = isAdmin ? [...NAV, { href: "/admin", label: "Admin" }] : NAV;
 
   return (
     <div className="flex min-h-full flex-col">
@@ -27,7 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             Privault
           </Link>
           <nav className="order-last -mx-1 flex w-full gap-1 overflow-x-auto sm:order-none sm:mx-0 sm:w-auto" aria-label="Main">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -39,6 +42,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 }`}
               >
                 {item.label}
+                {item.href === "/admin" && pending > 0 && (
+                  <span aria-label={`${pending} pending requests`} className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-medium text-white">
+                    {pending}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>

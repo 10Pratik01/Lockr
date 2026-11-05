@@ -117,3 +117,14 @@ export const ArrowLeft = (p: P) => (
     <path d="M19 12H5M11 6l-6 6 6 6" />
   </Svg>
 );
+export const Upload = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 16V4.5M7 9l5-5 5 5M4.5 15v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3" />
+  </Svg>
+);
+export const Shield = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 3.5 5 6v5.5c0 4.2 2.8 7.6 7 9 4.2-1.4 7-4.8 7-9V6l-7-2.5Z" />
+    <path d="m9 12 2 2 4-4.5" />
+  </Svg>
+);

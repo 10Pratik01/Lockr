@@ -4,17 +4,20 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useVault } from "./vault-provider";
 import { CredentialForm } from "./credential-form";
+import { CsvImport } from "./csv-import";
 import { ShareDialogBody } from "@/components/share/share-dialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Button, Input } from "@/components/ui/primitives";
-import { Check, Copy, Eye, EyeOff, External, LockMark, Pencil, Plus, Search, Share, Trash } from "@/components/ui/icons";
+import { Check, Copy, Eye, EyeOff, External, LockMark, Pencil, Plus, Search, Share, Trash, Upload } from "@/components/ui/icons";
 import { Menu } from "@/components/ui/menu";
 import { useToast } from "@/components/ui/toast";
 import { copySecret, CLIPBOARD_CLEAR_SECONDS } from "@/lib/clipboard";
+import { reportEvent } from "@/lib/audit-client";
 import type { DecryptedCredential } from "@/lib/vault/credential";
 
 type Modal =
   | { kind: "create" }
+  | { kind: "import" }
   | { kind: "edit"; credential: DecryptedCredential }
   | { kind: "share"; credential: DecryptedCredential }
   | { kind: "delete"; credential: DecryptedCredential }
@@ -66,10 +69,16 @@ export function Dashboard() {
             {credentials.length} credential{credentials.length === 1 ? "" : "s"} in your vault
           </p>
         </div>
-        <Button onClick={() => setModal({ kind: "create" })}>
-          <Plus width={16} height={16} />
-          Add credential
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => setModal({ kind: "import" })}>
+            <Upload width={16} height={16} />
+            Import CSV
+          </Button>
+          <Button onClick={() => setModal({ kind: "create" })}>
+            <Plus width={16} height={16} />
+            Add credential
+          </Button>
+        </div>
       </div>
 
       <div className="relative">
@@ -116,6 +125,7 @@ export function Dashboard() {
               onCopy={async (value, what) => {
                 try {
                   await copySecret(value);
+                  reportEvent(what === "Password" ? "credential.copy_password" : "credential.copy_username", c.id);
                   toast(what === "Password" ? `Password copied — clears in ${CLIPBOARD_CLEAR_SECONDS}s` : `${what} copied`);
                 } catch {
                   toast("Copy failed", "error");
@@ -141,6 +151,10 @@ export function Dashboard() {
             onDone={() => setModal(null)}
           />
         )}
+      </Dialog>
+
+      <Dialog open={modal?.kind === "import"} onClose={() => setModal(null)} title="Import from CSV">
+        {modal?.kind === "import" && <CsvImport onDone={() => setModal(null)} />}
       </Dialog>
 
       <Dialog open={modal?.kind === "share"} onClose={() => setModal(null)} title="Secure share">
@@ -221,7 +235,10 @@ function CredentialRow({
         <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
-            onClick={() => setRevealed((r) => !r)}
+            onClick={() => {
+              if (!revealed) reportEvent("credential.view", c.id);
+              setRevealed((r) => !r);
+            }}
             aria-label={revealed ? `Hide password for ${c.site}` : `Reveal password for ${c.site}`}
             aria-pressed={revealed}
             className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"

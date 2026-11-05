@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import { shareVerifySchema } from "@/lib/validation/share";
+import { logAudit } from "@/lib/audit";
 import { hashShareToken, MAX_OTP_ATTEMPTS, verifyOtp } from "@/lib/share/server";
 import { checkRateLimit, clientIp, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
 
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
     where: { tokenHash, ...usable },
     select: {
       id: true,
+      userId: true,
       otpVerifier: true,
       destroyOnOpen: true,
       encryptedPayload: true,
@@ -68,6 +70,9 @@ export async function POST(request: Request) {
         data: { usedAt: now, encryptedPayload: "", failedAttempts: { decrement: 1 } },
       });
   if (consumed.count === 0) return gone();
+
+  // Tell the owner their share was opened (no recipient info is known).
+  await logAudit(share.userId, "share.opened", { targetId: share.id });
 
   // Still ciphertext -- only the recipient's link fragment can decrypt it.
   return NextResponse.json({

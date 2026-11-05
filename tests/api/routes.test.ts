@@ -20,6 +20,7 @@ vi.mock("@/lib/auth/current-user", () => ({
 
 const vaultCreate = await import("@/app/api/vault/create/route");
 const vaultList = await import("@/app/api/vault/list/route");
+const vaultImport = await import("@/app/api/vault/import/route");
 const vaultItem = await import("@/app/api/vault/[id]/route");
 const vaultKey = await import("@/app/api/vault/key/route");
 const shareCreate = await import("@/app/api/share/create/route");
@@ -319,5 +320,30 @@ describe("sharing", () => {
     const unknown = await verify("A".repeat(43), "123456");
     expect(unknown.status).toBe(410);
     expect((await verify("short", "123456")).status).toBe(400);
+  });
+});
+
+describe("bulk import", () => {
+  it("rejects signed-out requests", async () => {
+    expect((await vaultImport.POST(json({ items: [CRED] }))).status).toBe(401);
+  });
+
+  it("stores every item under the caller and rejects malformed or oversized batches", async () => {
+    as("u1");
+    const res = await vaultImport.POST(json({ items: [CRED, CRED, CRED] }));
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({ imported: 3 });
+    expect(db.credential._rows().every((r) => r.userId === "u1")).toBe(true);
+
+    expect((await vaultImport.POST(json({ items: [] }))).status).toBe(400);
+    expect((await vaultImport.POST(json({ items: [{ encryptedData: "x" }] }))).status).toBe(400);
+    expect((await vaultImport.POST(json({ items: Array(101).fill(CRED) }))).status).toBe(400);
+    expect(db.credential._rows()).toHaveLength(3);
+  });
+
+  it("returns 429 when rate limited", async () => {
+    as("u1");
+    limiter.allow = false;
+    expect((await vaultImport.POST(json({ items: [CRED] }))).status).toBe(429);
   });
 });

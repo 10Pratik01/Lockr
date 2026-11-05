@@ -3,6 +3,7 @@ import { db } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { vaultKeyChangeSchema, vaultKeySchema } from "@/lib/validation/vault";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 
 const unauthorized = () => NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 const invalid = () => NextResponse.json({ error: "Invalid request" }, { status: 400 });
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
   if (count === 0) {
     return NextResponse.json({ error: "Vault already exists" }, { status: 409 });
   }
+  await logAudit(user.id, "vault.setup");
   return NextResponse.json({ vault: parsed.data }, { status: 201 });
 }
 
@@ -81,5 +83,6 @@ export async function PATCH(request: Request) {
   if (count === 0) {
     return NextResponse.json({ error: "Vault key has changed; unlock again" }, { status: 409 });
   }
+  await logAudit(user.id, "vault.passphrase_changed");
   return NextResponse.json({ vault: next });
 }

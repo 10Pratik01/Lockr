@@ -316,6 +316,13 @@ a {
   animation: enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--i, 0) * 55ms);
 }
+/* The entrance animation leaves every .enter item in its own stacking
+   context, so a dropdown's z-index only counts inside its own row and the
+   rows after it paint on top. Lift whichever row holds an open menu. */
+li.enter:has([aria-haspopup="menu"][aria-expanded="true"]) {
+  position: relative;
+  z-index: 40;
+}
 
 @keyframes pop {
   from {

@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { api } from "@/lib/api-client";
+import { reportEvent } from "@/lib/audit-client";
 import { createVaultKey, rewrapVaultKey, unlockVaultKey } from "@/lib/vault/keys";
 import {
   decryptCredential,
@@ -20,7 +21,7 @@ import {
   type DecryptedCredential,
   type StoredCredential,
 } from "@/lib/vault/credential";
-import type { VaultKeyInput } from "@/lib/validation/vault";
+import { IMPORT_BATCH_SIZE, type VaultKeyInput } from "@/lib/validation/vault";
 
 export type VaultStatus = "loading" | "no-vault" | "locked" | "unlocked" | "error";
 
@@ -42,7 +43,11 @@ interface VaultContextValue {
   refresh: () => Promise<void>;
   save: (data: CredentialData, id?: string) => Promise<DecryptedCredential>;
   remove: (id: string) => Promise<void>;
+  /** Encrypts and uploads in batches; resolves with how many were stored. */
+  importCredentials: (items: CredentialData[], onProgress?: (done: number) => void) => Promise<number>;
   changePassphrase: (current: string, next: string) => Promise<void>;
+  /** Runs an admin-approved reset: wipes the vault + credentials, returns to setup. */
+  resetVault: () => Promise<void>;
 }
 
 const VaultContext = createContext<VaultContextValue | null>(null);
@@ -105,6 +110,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const lock = useCallback(() => {
+    if (dekRef.current) reportEvent("vault.lock");
     dekRef.current = null;
     setCredentials([]);
     setUnreadable(0);
@@ -149,8 +155,10 @@ export function VaultProvider({ children }: { children: ReactNode }) {
       try {
         dek = await unlockVaultKey(passphrase, record);
       } catch {
+        reportEvent("vault.unlock_failed");
         throw new Error("Incorrect vault passphrase");
       }
+      reportEvent("vault.unlock");
       await enter(dek);
     },
     [record, enter]
@@ -173,6 +181,30 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     setCredentials((list) => list.filter((c) => c.id !== id));
   }, []);
 
+  const importCredentials = useCallback(
+    async (items: CredentialData[], onProgress?: (done: number) => void) => {
+      const dek = dekRef.current;
+      if (!dek) throw new Error("Vault is locked");
+      let stored = 0;
+      try {
+        for (let i = 0; i < items.length; i += IMPORT_BATCH_SIZE) {
+          const batch = await Promise.all(items.slice(i, i + IMPORT_BATCH_SIZE).map((c) => encryptCredential(c, dek)));
+          const { imported } = await api<{ imported: number }>("/api/vault/import", {
+            method: "POST",
+            body: { items: batch },
+          });
+          stored += imported;
+          onProgress?.(stored);
+        }
+      } finally {
+        // Show whatever landed, even if a later batch failed.
+        if (stored > 0) await loadCredentials(dek);
+      }
+      return stored;
+    },
+    [loadCredentials]
+  );
+
   const changePassphrase = useCallback(async (current: string, next: string) => {
     // Re-fetch so we compare-and-swap against the key actually on the server.
     const { vault } = await api<{ vault: VaultKeyInput | null }>("/api/vault/key");
@@ -189,6 +221,15 @@ export function VaultProvider({ children }: { children: ReactNode }) {
       body: { ...rewrapped, previousWrappedVaultKey: vault.wrappedVaultKey },
     });
     setRecord(rewrapped);
+  }, []);
+
+  const resetVault = useCallback(async () => {
+    await api("/api/vault/reset", { method: "POST", body: { confirm: "RESET" } });
+    dekRef.current = null;
+    setCredentials([]);
+    setUnreadable(0);
+    setRecord(null);
+    setStatus("no-vault");
   }, []);
 
   const setAutoLockMinutes = useCallback((minutes: number) => {
@@ -230,9 +271,11 @@ export function VaultProvider({ children }: { children: ReactNode }) {
       refresh,
       save,
       remove,
+      importCredentials,
       changePassphrase,
+      resetVault,
     }),
-    [status, credentials, unreadable, autoLockMinutes, setAutoLockMinutes, setup, unlock, lock, refresh, save, remove, changePassphrase]
+    [status, credentials, unreadable, autoLockMinutes, setAutoLockMinutes, setup, unlock, lock, refresh, save, remove, importCredentials, changePassphrase, resetVault]
   );
 
   return <VaultContext.Provider value={value}>{children}</VaultContext.Provider>;

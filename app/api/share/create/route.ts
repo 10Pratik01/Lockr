@@ -5,6 +5,7 @@ import { shareCreateSchema } from "@/lib/validation/share";
 import { generateOtp, generateShareToken } from "@/lib/crypto/random";
 import { createOtpVerifier, hashShareToken } from "@/lib/share/server";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -57,5 +58,9 @@ export async function POST(request: Request) {
     data: { encryptedPayload: "" },
   });
 
+  await logAudit(user.id, "share.create", {
+    targetId: share.id,
+    detail: destroyOnOpen ? "destroy on open" : `expires in ${expiresInMinutes} min`,
+  });
   return NextResponse.json({ share: { ...share, token, otp } }, { status: 201 });
 }

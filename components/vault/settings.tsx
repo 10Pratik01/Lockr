@@ -6,6 +6,7 @@ import { AUTO_LOCK_OPTIONS, useVault } from "./vault-provider";
 import { Button, Card, ErrorText, Input, Label } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
 import { MIN_PASSPHRASE_LENGTH } from "@/lib/vault/keys";
+import { ResetRequest } from "./reset-request";
 import { RecentActivity } from "@/components/share/recent-activity";
 
 export function Settings() {
@@ -19,6 +20,14 @@ export function Settings() {
         <h2 className="font-display text-xl font-medium">Vault</h2>
         <AutoLockSetting />
         {status !== "no-vault" && status !== "loading" && <ChangePassphrase />}
+        {status !== "no-vault" && status !== "loading" && (
+          <Card>
+            <h3 className="font-medium">Forgot your passphrase?</h3>
+            <div className="mt-2">
+              <ResetRequest />
+            </div>
+          </Card>
+        )}
       </section>
 
       <section className="space-y-3">

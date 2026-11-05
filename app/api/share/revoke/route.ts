@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { shareRevokeSchema } from "@/lib/validation/share";
+import { logAudit } from "@/lib/audit";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -19,5 +20,6 @@ export async function POST(request: Request) {
   });
 
   if (count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  await logAudit(user.id, "share.revoke", { targetId: parsed.data.id });
   return NextResponse.json({ success: true });
 }
