@@ -48,8 +48,8 @@ export function Words({ text, offset = 0 }: { text: string; offset?: number }) {
   return (
     <>
       {text.split(' ').map((w, i) => (
-        <span key={i} className="word-mask">
-          <span className="word" style={{ '--w': i + offset } as React.CSSProperties}>
+        <span key={i} className="word-mask ">
+          <span className="word px-1" style={{ '--w': i + offset } as React.CSSProperties}>
             {w}
           </span>
           {i < text.split(' ').length - 1 ? ' ' : ''}

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { SignInButton, SignUpButton, Show, UserButton } from '@clerk/nextjs'
 import { SealDemo } from '@/components/landing/seal-demo'
+import { FlowDemo } from '@/components/landing/flow-demo'
 import { Reveal, Words } from '@/components/landing/reveal'
 
 const STEPS = [
@@ -67,6 +68,9 @@ export default function Home() {
           Privault
         </Link>
         <nav className="flex min-w-0 items-center gap-3 text-sm sm:gap-5">
+          <a href="#journey" className="hidden text-l-muted hover:text-l-fg lg:inline">
+            How it is encrypted
+          </a>
           <a href="#how" className="hidden text-l-muted hover:text-l-fg sm:inline">
             How sharing works
           </a>
@@ -112,6 +116,20 @@ export default function Home() {
           <div className="rise" style={{ '--i': 3 } as React.CSSProperties}>
             <SealDemo />
           </div>
+        </section>
+
+        <section id="journey" className="border-t border-l-line">
+          <Reveal className="mx-auto w-full max-w-6xl px-5 py-24 sm:px-8 sm:py-32">
+            <h2 className="max-w-2xl font-display text-3xl leading-tight font-medium tracking-[-0.01em] text-balance sm:text-4xl">
+              <Words text="Follow a password from your keyboard to our database." />
+            </h2>
+            <p className="r-item mt-5 max-w-[52ch] text-lg leading-relaxed text-l-muted" style={{ '--i': 4 } as React.CSSProperties}>
+              Watch where it stays readable, and where it stops.
+            </p>
+            <div className="r-item mt-14" style={{ '--i': 6 } as React.CSSProperties}>
+              <FlowDemo />
+            </div>
+          </Reveal>
         </section>
 
         <section id="how" className="relative border-t border-l-line">

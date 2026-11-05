@@ -424,3 +424,251 @@ button:not(:disabled):active {
     transform: none;
   }
 }
+
+/* ---------- Landing: "follow a password" walkthrough ---------- */
+
+.flow-track {
+  position: relative;
+}
+.flow-stations {
+  display: grid;
+  gap: 0;
+}
+
+/* Each station draws the rail segment from its node down to the next node, so
+   the line stays aligned however tall a station gets. Done stations fill it. */
+.flow-station {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  min-height: 44px;
+  padding: 10px 8px 10px 8px;
+  border-radius: 0.75rem;
+  text-align: left;
+  color: var(--l-muted);
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.flow-station:hover,
+.flow-station[data-state="active"],
+.flow-station[data-state="done"] {
+  color: var(--l-fg);
+}
+.flow-station::before,
+.flow-station::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 21px;
+  width: 2px;
+  height: 100%;
+}
+.flow-station::before {
+  background: var(--l-line);
+}
+.flow-station::after {
+  background: var(--l-fg);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.flow-station[data-state="done"]::after {
+  transform: scaleY(1);
+}
+.flow-station[data-last]::before,
+.flow-station[data-last]::after {
+  display: none;
+}
+/* Mobile: the trust boundary is a dashed rule above the server station. */
+.flow-station[data-zone="server"] {
+  margin-top: 0.5rem;
+  border-top: 1px dashed var(--l-line);
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.flow-node {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 4px;
+  border: 2px solid var(--l-line);
+  border-radius: 999px;
+  background: var(--l-bg);
+  transition:
+    background-color 0.4s,
+    border-color 0.4s;
+}
+.flow-station[data-state="done"] .flow-node {
+  background: var(--l-fg);
+  border-color: var(--l-fg);
+}
+.flow-station[data-state="active"] .flow-node {
+  background: var(--l-cipher);
+  border-color: var(--l-cipher);
+  outline: 2px solid var(--l-cipher);
+  outline-offset: 3px;
+}
+
+.flow-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.flow-zone {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--l-muted);
+}
+
+/* The progress bar doubles as the clock: when it finishes, the next step starts. */
+.flow-timer {
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  left: 36px;
+  height: 2px;
+  background: var(--l-cipher);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: flow-timer 4.6s linear forwards;
+}
+.flow-timer[data-paused] {
+  animation-play-state: paused;
+}
+@keyframes flow-timer {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (min-width: 768px) {
+  .flow-stations {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .flow-station {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 10px 6px;
+    text-align: center;
+  }
+  .flow-station::before,
+  .flow-station::after {
+    left: 50%;
+    top: 20px;
+    width: 100%;
+    height: 2px;
+  }
+  .flow-station::after {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .flow-station[data-state="done"]::after {
+    transform: scaleX(1);
+  }
+  .flow-station[data-zone="server"] {
+    margin-top: 0;
+    border-top: 0;
+    border-radius: 0.75rem;
+  }
+  .flow-node {
+    margin-top: 4px;
+  }
+  .flow-timer {
+    right: 14%;
+    left: 14%;
+  }
+  /* Trust boundary between the 4th and 5th station. */
+  .flow-boundary {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 80%;
+    border-left: 1px dashed var(--l-muted);
+    opacity: 0.55;
+  }
+}
+.flow-boundary {
+  display: none;
+}
+@media (min-width: 768px) {
+  .flow-boundary {
+    display: block;
+  }
+}
+
+/* Stage content swaps in; rows and cells stagger by --i. */
+@keyframes flow-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.flow-in {
+  animation: flow-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+.flow-row {
+  animation: flow-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 110ms + 250ms);
+}
+@keyframes flow-cell {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+.flow-cell {
+  animation: flow-cell 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 55ms + 300ms);
+}
+
+/* The passphrase types itself out, one step per character. */
+.flow-type {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  vertical-align: bottom;
+  white-space: nowrap;
+  animation: flow-type 1.5s steps(21) 0.35s forwards;
+}
+@keyframes flow-type {
+  to {
+    width: 21ch;
+  }
+}
+.flow-caret {
+  display: inline-block;
+  width: 0.55ch;
+  height: 1.1em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--l-cipher);
+  animation: flow-blink 1s steps(2, jump-none) infinite;
+}
+@keyframes flow-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-in,
+  .flow-row,
+  .flow-cell,
+  .flow-caret {
+    animation: none;
+  }
+  .flow-type {
+    width: 21ch;
+    animation: none;
+  }
+  .flow-station::after,
+  .flow-node {
+    transition: none;
+  }
+}
