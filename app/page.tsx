@@ -65,7 +65,7 @@ export default function Home() {
       <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-2 py-2 font-display text-xl tracking-tight">
           <Mark />
-          Privault
+          Lockr
         </Link>
         <nav className="flex min-w-0 items-center gap-3 text-sm sm:gap-5">
           <a href="#journey" className="hidden text-l-muted hover:text-l-fg lg:inline">
@@ -99,7 +99,7 @@ export default function Home() {
               className="rise mt-6 max-w-[34rem] text-lg leading-relaxed text-l-muted"
               style={{ '--i': 1 } as React.CSSProperties}
             >
-              Privault keeps your passwords encrypted in your browser, so the server only ever holds
+              Lockr keeps your passwords encrypted in your browser, so the server only ever holds
               ciphertext. When someone else needs a login, share it once with a link and a separate code.
             </p>
             <div
@@ -224,7 +224,7 @@ export default function Home() {
 
       <footer className="border-t border-l-line">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 text-sm text-l-muted sm:px-8">
-          <span className="font-display text-base text-l-fg">Privault</span>
+          <span className="font-display text-base text-l-fg">Lockr</span>
           <span>Zero-knowledge by design</span>
         </div>
       </footer>

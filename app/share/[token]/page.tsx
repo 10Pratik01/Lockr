@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ShareRedeem } from "@/components/share/share-redeem";
 
 export const metadata: Metadata = {
-  title: "Secure Share · Privault",
+  title: "Secure Share · Lockr",
   robots: { index: false, follow: false },
 };
 

@@ -22,7 +22,7 @@ const STAGES: Stage[] = [
     label: 'Passphrase',
     zone: 'browser',
     title: 'You type a passphrase that never travels',
-    body: 'It is separate from your login. It stays in this tab and is never sent to Privault.',
+    body: 'It is separate from your login. It stays in this tab and is never sent to Lockr.',
     threat: 'hijacks your login session',
     outcome: 'they are in the app but still cannot open the vault. The passphrase was never on our server.',
   },

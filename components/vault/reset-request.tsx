@@ -114,7 +114,7 @@ export function ResetRequest() {
   return (
     <div className="space-y-3">
       <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Forgot your vault passphrase? An admin has to approve a reset. Because Privault never sees your passphrase, a
+        Forgot your vault passphrase? An admin has to approve a reset. Because Lockr never sees your passphrase, a
         reset can’t restore your data: it <strong>erases the vault</strong> and lets you start a new one.
       </p>
       {note && <p className="text-sm text-amber-700 dark:text-amber-300">{note}</p>}

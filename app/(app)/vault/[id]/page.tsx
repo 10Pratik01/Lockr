@@ -3,7 +3,7 @@ import { requireSignedIn } from "@/lib/auth/require-user";
 import { VaultGate } from "@/components/vault/vault-gate";
 import { CredentialDetails } from "@/components/vault/credential-details";
 
-export const metadata: Metadata = { title: "Credential · Privault" };
+export const metadata: Metadata = { title: "Credential · Lockr" };
 
 export default async function CredentialPage({ params }: Readonly<{ params: Promise<{ id: string }> }>) {
   await requireSignedIn();

@@ -118,7 +118,7 @@ export function SealDemo() {
         <p className="text-xs text-l-muted">One-time share</p>
         <div className="share-chip space-y-2" data-phase={phase}>
           <div className="flex items-center justify-between gap-3 rounded-lg border border-l-line bg-l-bg px-3 py-2 text-sm">
-            <span className="truncate font-mono text-[13px]">privault.app/s/9fK2…xQ</span>
+            <span className="truncate font-mono text-[13px]">lockr.app/s/9fK2…xQ</span>
             <span className="shrink-0 text-xs text-l-muted">link</span>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border border-l-line bg-l-bg px-3 py-2 text-sm">

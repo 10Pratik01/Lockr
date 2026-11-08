@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔐 Privault
+# 🔐 Lockr
 
 ### A password vault that **can't read your passwords**, and one-time share links that **destroy themselves**.
 
@@ -12,7 +12,7 @@
 
 ## ✨ The 30-second pitch
 
-Most password managers say *"trust us, we encrypt it."* Privault is built so you **don't have to**.
+Most password managers say *"trust us, we encrypt it."* Lockr is built so you **don't have to**.
 
 Everything is encrypted **in your browser** before it is sent anywhere. The server stores ciphertext it has no key for. A full database leak gives an attacker a pile of random-looking bytes.
 

@@ -27,7 +27,7 @@ export type VaultStatus = "loading" | "no-vault" | "locked" | "unlocked" | "erro
 
 export const AUTO_LOCK_OPTIONS = [5, 10, 15, 30, 0] as const; // 0 = never
 const DEFAULT_AUTO_LOCK_MINUTES = 10;
-const AUTO_LOCK_STORAGE_KEY = "privault:autoLockMinutes";
+const AUTO_LOCK_STORAGE_KEY = "lockr:autoLockMinutes";
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "mousemove", "scroll", "touchstart"] as const;
 
 interface VaultContextValue {
@@ -58,7 +58,7 @@ export function useVault() {
   return ctx;
 }
 
-const AUTO_LOCK_CHANGED = "privault:auto-lock-changed";
+const AUTO_LOCK_CHANGED = "lockr:auto-lock-changed";
 // Fallback when localStorage is unavailable (e.g. blocked in private mode).
 let memoryAutoLock: number | null = null;
 

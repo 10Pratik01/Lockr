@@ -27,7 +27,7 @@ export function AppShell({ children, isAdmin }: Readonly<{ children: ReactNode; 
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 sm:h-14 sm:flex-nowrap sm:py-0">
           <Link href="/dashboard" className="flex items-center gap-2 font-display text-lg tracking-tight">
             <LockMark width={20} height={20} />
-            Privault
+            Lockr
           </Link>
           <nav className="order-last -mx-1 flex w-full gap-1 overflow-x-auto sm:order-none sm:mx-0 sm:w-auto" aria-label="Main">
             {nav.map((item) => (

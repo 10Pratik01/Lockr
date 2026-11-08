@@ -127,7 +127,7 @@ function SetupForm() {
           It encrypts your vault on this device and is separate from your account password.
         </p>
         <p className="mt-4 rounded-lg bg-red-50 px-3.5 py-3 text-sm leading-relaxed text-red-800 dark:bg-red-950 dark:text-red-400">
-          Privault never sees this passphrase, so it <strong>cannot be recovered</strong>. If you forget it, the
+          Lockr never sees this passphrase, so it <strong>cannot be recovered</strong>. If you forget it, the
           vault stays locked for good.
         </p>
         <form onSubmit={onSubmit} className="mt-6 space-y-4">

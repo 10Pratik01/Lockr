@@ -39,7 +39,7 @@ export function Settings() {
         <h2 className="font-display text-xl font-medium">Authentication</h2>
         <p className="text-sm text-zinc-500">
           Email, password, passkeys and active sessions are managed by your account provider. Passkeys
-          use your device&apos;s biometrics locally — fingerprint data never reaches Privault.
+          use your device&apos;s biometrics locally — fingerprint data never reaches Lockr.
         </p>
         <UserProfile routing="hash" />
       </section>

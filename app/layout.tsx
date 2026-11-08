@@ -19,7 +19,7 @@ const display = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Privault",
+  title: "Lockr",
   description: "Zero-knowledge password vault with one-time secure sharing",
 };
 
