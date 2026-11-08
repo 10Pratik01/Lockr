@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/toast";
 import { copySecret, CLIPBOARD_CLEAR_SECONDS } from "@/lib/clipboard";
 import { reportEvent } from "@/lib/audit-client";
 
-export function CredentialDetails({ id }: { id: string }) {
+export function CredentialDetails({ id }: Readonly<{ id: string }>) {
   const { credentials, remove } = useVault();
   const toast = useToast();
   const router = useRouter();
@@ -149,7 +149,7 @@ export function CredentialDetails({ id }: { id: string }) {
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({ label, children }: Readonly<{ label: string; children: React.ReactNode }>) {
   return (
     <div>
       <dt className="text-xs font-medium text-zinc-500">{label}</dt>
@@ -163,12 +163,12 @@ function IconButton({
   onClick,
   swapKey,
   children,
-}: {
+}: Readonly<{
   label: string;
   onClick: () => void;
   swapKey: string;
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <button
       type="button"
@@ -183,7 +183,7 @@ function IconButton({
   );
 }
 
-function CopyButton({ onClick, label }: { onClick: () => void; label: string }) {
+function CopyButton({ onClick, label }: Readonly<{ onClick: () => void; label: string }>) {
   const [done, setDone] = useState(false);
   return (
     <IconButton

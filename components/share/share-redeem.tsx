@@ -27,7 +27,7 @@ function readLinkKey(token: string): string | null {
 
 const noSubscribe = () => () => {};
 
-export function ShareRedeem({ token }: { token: string }) {
+export function ShareRedeem({ token }: Readonly<{ token: string }>) {
   // undefined during server render / before hydration, null if missing.
   const linkKey = useSyncExternalStore(noSubscribe, () => readLinkKey(token), () => undefined);
   const usedRef = useRef(false);
@@ -100,10 +100,10 @@ export function ShareRedeem({ token }: { token: string }) {
         </div>
 
         {state.kind === "enter" && linkKey === undefined && (
-          <div className="space-y-3" role="status" aria-label="Loading">
+          <output className="block space-y-3" aria-label="Loading">
             <Skeleton className="mx-auto h-5 w-2/3" />
             <Skeleton className="h-11 w-full rounded-lg" />
-          </div>
+          </output>
         )}
 
         {state.kind === "enter" && linkKey && (
@@ -205,7 +205,7 @@ export function ShareRedeem({ token }: { token: string }) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: Readonly<{ label: string; children: React.ReactNode }>) {
   return (
     <div>
       <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</dt>

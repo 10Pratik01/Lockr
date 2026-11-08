@@ -119,6 +119,22 @@ describe("credential authorization", () => {
     expect(db.credential._rows()[0].userId).toBe("mallory");
   });
 
+  it("refuses new credentials past the per-user cap, on create and import", async () => {
+    await db.credential.createMany({ data: Array.from({ length: 5000 }, () => ({ userId: "alice" })) });
+    as("alice");
+    expect((await vaultCreate.POST(json(CRED))).status).toBe(409);
+    expect((await vaultImport.POST(json({ items: [CRED] }))).status).toBe(409);
+    as("bob");
+    expect((await vaultCreate.POST(json(CRED))).status).toBe(201);
+  });
+
+  it("rejects oversized bodies before validation", async () => {
+    as("alice");
+    const res = await vaultCreate.POST(json({ ...CRED, junk: "x".repeat(40_000) }));
+    expect(res.status).toBe(400);
+    expect(db.credential._rows()).toHaveLength(0);
+  });
+
   it("rejects malformed bodies without echoing details", async () => {
     as("alice");
     const res = await vaultCreate.POST(json({ encryptedData: "", iv: 5 }));

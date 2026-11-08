@@ -35,11 +35,15 @@ export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInpu
   );
 }
 
-export function Label(props: LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300" {...props} />;
+export function Label({ htmlFor, children, ...props }: Readonly<LabelHTMLAttributes<HTMLLabelElement>>) {
+  return (
+    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300" {...props}>
+      {children}
+    </label>
+  );
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function Card({ children, className = "" }: Readonly<{ children: ReactNode; className?: string }>) {
   return (
     <div
       className={`rounded-xl border border-zinc-200 bg-l-card p-5 dark:border-zinc-800 ${className}`}
@@ -49,7 +53,7 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   );
 }
 
-export function ErrorText({ children }: { children: ReactNode }) {
+export function ErrorText({ children }: Readonly<{ children: ReactNode }>) {
   if (!children) return null;
   return (
     <p role="alert" className="text-sm text-red-600 dark:text-red-400">

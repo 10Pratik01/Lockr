@@ -5,7 +5,7 @@ import { CredentialDetails } from "@/components/vault/credential-details";
 
 export const metadata: Metadata = { title: "Credential · Privault" };
 
-export default async function CredentialPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CredentialPage({ params }: Readonly<{ params: Promise<{ id: string }> }>) {
   await requireSignedIn();
   const { id } = await params;
   return (

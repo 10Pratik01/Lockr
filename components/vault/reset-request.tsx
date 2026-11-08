@@ -64,10 +64,10 @@ export function ResetRequest() {
   if (request?.status === "PENDING") {
     return (
       <div className="space-y-3">
-        <p role="status" className="rounded-lg bg-amber-50 px-3.5 py-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+        <output className="block rounded-lg bg-amber-50 px-3.5 py-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
           Waiting for an admin to approve your request (sent {new Date(request.createdAt).toLocaleString()}). This page
           updates on its own.
-        </p>
+        </output>
         <ErrorText>{error}</ErrorText>
         <Button variant="ghost" size="sm" disabled={busy} onClick={() => act(() => api("/api/vault/reset-request", { method: "DELETE" }), "Couldn’t cancel")}>
           Cancel request
@@ -79,11 +79,11 @@ export function ResetRequest() {
   if (request?.status === "APPROVED") {
     return (
       <div className="space-y-3">
-        <p role="status" className="rounded-lg bg-red-50 px-3.5 py-3 text-sm leading-relaxed text-red-800 dark:bg-red-950 dark:text-red-300">
+        <output className="block rounded-lg bg-red-50 px-3.5 py-3 text-sm leading-relaxed text-red-800 dark:bg-red-950 dark:text-red-300">
           <strong>Approved.</strong> Resetting <strong>permanently deletes every credential and share</strong> in this
           vault — they can’t be decrypted without the old passphrase, and nobody, including the admin, can recover them.
           You’ll then choose a new passphrase. Valid until {request.expiresAt ? new Date(request.expiresAt).toLocaleString() : "—"}.
-        </p>
+        </output>
         <div className="max-w-xs">
           <Label htmlFor="reset-confirm">Type RESET to confirm</Label>
           <Input id="reset-confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" />
@@ -105,12 +105,11 @@ export function ResetRequest() {
     );
   }
 
-  const note =
-    request?.status === "DENIED"
-      ? "Your last request was denied by an admin."
-      : request?.status === "EXPIRED"
-        ? "Your last approval expired. You can send a new request."
-        : null;
+  const NOTES: Record<string, string> = {
+    DENIED: "Your last request was denied by an admin.",
+    EXPIRED: "Your last approval expired. You can send a new request.",
+  };
+  const note = (request && NOTES[request.status]) || null;
 
   return (
     <div className="space-y-3">

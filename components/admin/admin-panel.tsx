@@ -100,13 +100,13 @@ export function AdminPanel() {
           Approving lets that user <strong>wipe their vault</strong> and set a new passphrase. Their old data can’t be
           recovered by anyone. Approve only if you’ve confirmed it’s really them.
         </p>
-        {!data ? (
-          <p className="text-sm text-zinc-500">Loading…</p>
-        ) : pending.length === 0 ? (
+        {!data && <p className="text-sm text-zinc-500">Loading…</p>}
+        {data && pending.length === 0 && (
           <Card>
             <p className="text-sm text-zinc-500">No requests waiting.</p>
           </Card>
-        ) : (
+        )}
+        {data && pending.length > 0 && (
           <ul className="space-y-3">
             {pending.map((r) => (
               <li key={r.id}>

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { credentialImportSchema } from "@/lib/validation/vault";
+import { credentialImportSchema, MAX_CREDENTIALS } from "@/lib/validation/vault";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
 
@@ -17,10 +18,15 @@ export async function POST(request: Request) {
     return tooManyRequests(RATE_LIMITS.credentialImport);
   }
 
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request, 2_500_000);
   const parsed = credentialImportSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  const existing = await db.credential.count({ where: { userId: user.id } });
+  if (existing + parsed.data.items.length > MAX_CREDENTIALS) {
+    return NextResponse.json({ error: "Credential limit reached" }, { status: 409 });
   }
 
   const { count } = await db.credential.createMany({

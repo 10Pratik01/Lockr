@@ -9,8 +9,8 @@ function matches(row: Row, where: Where = {}): boolean {
     const value = row[field];
     if (cond !== null && typeof cond === "object" && !(cond instanceof Date)) {
       const c = cond as Record<string, unknown>;
-      if ("gt" in c && !((value as Date | number) > (c.gt as Date | number))) return false;
-      if ("lt" in c && !((value as Date | number) < (c.lt as Date | number))) return false;
+      if ("gt" in c && (value as Date | number) <= (c.gt as Date | number)) return false;
+      if ("lt" in c && (value as Date | number) >= (c.lt as Date | number)) return false;
       if ("not" in c && value === c.not) return false;
       return true;
     }
@@ -36,6 +36,8 @@ function pick(row: Row, select?: Record<string, boolean>) {
   return Object.fromEntries(Object.keys(select).map((k) => [k, row[k]]));
 }
 
+const cmp = (a: Date, b: Date) => Number(a > b) - Number(a < b);
+
 let seq = 0;
 
 function model(defaults: () => Row, unique: string[] = []) {
@@ -43,12 +45,12 @@ function model(defaults: () => Row, unique: string[] = []) {
   return {
     _rows: () => rows,
     _reset: () => (rows = []),
-    async create({ data, select }: { data: Row; select?: Record<string, boolean> }) {
+    create({ data, select }: { data: Row; select?: Record<string, boolean> }) {
       const row = { id: `id_${++seq}`, createdAt: new Date(), updatedAt: new Date(), ...defaults(), ...data };
       rows.push(row);
-      return pick(row, select);
+      return Promise.resolve(pick(row, select));
     },
-    async createMany({ data, skipDuplicates }: { data: Row[]; skipDuplicates?: boolean }) {
+    createMany({ data, skipDuplicates }: { data: Row[]; skipDuplicates?: boolean }) {
       let count = 0;
       for (const d of data) {
         if (unique.some((u) => rows.some((r) => r[u] === d[u]))) {
@@ -58,16 +60,16 @@ function model(defaults: () => Row, unique: string[] = []) {
         rows.push({ id: `id_${++seq}`, createdAt: new Date(), updatedAt: new Date(), ...defaults(), ...d });
         count++;
       }
-      return { count };
+      return Promise.resolve({ count });
     },
-    async findFirst({ where, select }: { where?: Where; select?: Record<string, boolean> }) {
+    findFirst({ where, select }: { where?: Where; select?: Record<string, boolean> }) {
       const row = rows.find((r) => matches(r, where));
-      return row ? pick(row, select) : null;
+      return Promise.resolve(row ? pick(row, select) : null);
     },
     async findUnique(args: { where?: Where; select?: Record<string, boolean> }) {
       return this.findFirst(args);
     },
-    async findMany({
+    findMany({
       where,
       select,
       orderBy,
@@ -85,29 +87,29 @@ function model(defaults: () => Row, unique: string[] = []) {
         // Stable: ties (same millisecond) keep insertion order, reversed for desc.
         hit = hit
           .map((r, i) => ({ r, i }))
-          .sort((a, b) => sign * (((a.r[field] as Date) > (b.r[field] as Date) ? 1 : (a.r[field] as Date) < (b.r[field] as Date) ? -1 : 0) || a.i - b.i))
+          .sort((a, b) => sign * (cmp(a.r[field] as Date, b.r[field] as Date) || a.i - b.i))
           .map(({ r }) => r);
       }
-      return hit.slice(0, take).map((r) => pick(r, select));
+      return Promise.resolve(hit.slice(0, take).map((r) => pick(r, select)));
     },
-    async updateMany({ where, data }: { where?: Where; data: Row }) {
+    updateMany({ where, data }: { where?: Where; data: Row }) {
       const hit = rows.filter((r) => matches(r, where));
       hit.forEach((r) => apply(r, data));
-      return { count: hit.length };
+      return Promise.resolve({ count: hit.length });
     },
-    async update({ where, data }: { where: Where; data: Row }) {
+    update({ where, data }: { where: Where; data: Row }) {
       const row = rows.find((r) => matches(r, where));
       if (!row) throw new Error("Record not found");
       apply(row, data);
-      return { ...row };
+      return Promise.resolve({ ...row });
     },
-    async count({ where }: { where?: Where } = {}) {
-      return rows.filter((r) => matches(r, where)).length;
+    count({ where }: { where?: Where } = {}) {
+      return Promise.resolve(rows.filter((r) => matches(r, where)).length);
     },
-    async deleteMany({ where }: { where?: Where }) {
+    deleteMany({ where }: { where?: Where }) {
       const before = rows.length;
       rows = rows.filter((r) => !matches(r, where));
-      return { count: before - rows.length };
+      return Promise.resolve({ count: before - rows.length });
     },
   };
 }

@@ -9,12 +9,12 @@ export function Dialog({
   onClose,
   title,
   children,
-}: {
+}: Readonly<{
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
-}) {
+}>) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {

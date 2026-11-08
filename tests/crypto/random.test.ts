@@ -8,7 +8,7 @@ describe("secure random", () => {
     expect(tokens.size).toBe(200);
     for (const t of tokens) {
       expect(t).toMatch(/^[A-Za-z0-9_-]+$/);
-      expect(fromBase64Url(t).length).toBe(32);
+      expect(fromBase64Url(t)).toHaveLength(32);
     }
   });
 

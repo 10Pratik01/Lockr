@@ -12,7 +12,7 @@ import { MAX_IMPORT_BYTES, parseImport, type ImportRow } from "@/lib/vault/csv";
  * in this tab and every row is encrypted with the vault key before upload --
  * the server never sees the CSV or any plaintext.
  */
-export function CsvImport({ onDone }: { onDone: () => void }) {
+export function CsvImport({ onDone }: Readonly<{ onDone: () => void }>) {
   const { credentials, importCredentials } = useVault();
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -22,6 +22,7 @@ export function CsvImport({ onDone }: { onDone: () => void }) {
   const [progress, setProgress] = useState<number | null>(null);
 
   const ready = rows?.filter((r) => r.status === "ready") ?? [];
+  const plural = ready.length === 1 ? "" : "s";
   const duplicates = rows?.filter((r) => r.status === "duplicate").length ?? 0;
   const invalid = rows?.filter((r) => r.status === "invalid") ?? [];
   const busy = progress !== null;
@@ -107,7 +108,7 @@ export function CsvImport({ onDone }: { onDone: () => void }) {
               Cancel
             </Button>
             <Button disabled={busy || ready.length === 0} onClick={run}>
-              {busy ? `Importing… ${progress}/${ready.length}` : `Import ${ready.length} credential${ready.length === 1 ? "" : "s"}`}
+              {busy ? `Importing… ${progress}/${ready.length}` : `Import ${ready.length} credential${plural}`}
             </Button>
           </div>
         </div>
@@ -116,7 +117,7 @@ export function CsvImport({ onDone }: { onDone: () => void }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({ label, value }: Readonly<{ label: string; value: number }>) {
   return (
     <div className="rounded-lg border border-zinc-200 py-2 dark:border-zinc-800">
       <dd className="font-display text-2xl">{value}</dd>

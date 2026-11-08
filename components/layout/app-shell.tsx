@@ -15,7 +15,7 @@ const NAV = [
   { href: "/settings", label: "Settings" },
 ];
 
-export function AppShell({ children, isAdmin }: { children: ReactNode; isAdmin: boolean }) {
+export function AppShell({ children, isAdmin }: Readonly<{ children: ReactNode; isAdmin: boolean }>) {
   const pathname = usePathname();
   const { status, lock } = useVault();
   const pending = useAdminPending(isAdmin);

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { credentialInputSchema } from "@/lib/validation/vault";
+import { credentialInputSchema, MAX_CREDENTIALS } from "@/lib/validation/vault";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
 
@@ -14,13 +15,17 @@ export async function POST(request: Request) {
     return tooManyRequests(RATE_LIMITS.credentialWrite);
   }
 
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request);
   const parsed = credentialInputSchema.safeParse(body);
   if (!parsed.success) {
     // Generic message -- never echo back which field or why, per the
     // "no sensitive info in errors" rule; details go to server logs only,
     // and even there, never the payload itself.
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  if ((await db.credential.count({ where: { userId: user.id } })) >= MAX_CREDENTIALS) {
+    return NextResponse.json({ error: "Credential limit reached" }, { status: 409 });
   }
 
   const credential = await db.credential.create({

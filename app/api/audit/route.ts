@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { clientAuditSchema } from "@/lib/validation/admin";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!(await checkRateLimit(RATE_LIMITS.auditEvent, user.id))) return tooManyRequests(RATE_LIMITS.auditEvent);
 
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request);
   const parsed = clientAuditSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 

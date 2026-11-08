@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { randomInt } from '@/lib/crypto/random'
 
 type Phase = 'plain' | 'scramble' | 'sealed' | 'shared' | 'burned'
 
@@ -29,7 +30,7 @@ function scrambled(progress: number): string {
   return SECRET.split('')
     .map((ch, i) => {
       if (i / SECRET.length < progress * 0.35) return CIPHER[i]
-      return GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
+      return GLYPHS[randomInt(GLYPHS.length)]
     })
     .join('')
 }

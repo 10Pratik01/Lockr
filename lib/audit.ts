@@ -1,6 +1,7 @@
 // Append-only activity trail. Records WHAT happened and to WHICH record --
 // never secrets, ciphertext, passphrases or raw IPs.
 import { db } from "@/lib/prisma";
+import { randomInt } from "@/lib/crypto/random";
 import type { AuditAction } from "@/lib/audit-actions";
 
 interface AuditOptions {
@@ -30,8 +31,8 @@ export async function logAudit(userId: string, action: AuditAction, opts: AuditO
       select: { id: true },
     });
     // Occasional cleanup (~1% of writes) keeps the table bounded without a cron
-    // job. Math.random is fine here: it's load sampling, not a secret.
-    if (Math.random() < 0.01) {
+    // job.
+    if (randomInt(100) === 0) {
       await db.auditLog.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - RETENTION_DAYS * 86_400_000) } } });
     }
   } catch {

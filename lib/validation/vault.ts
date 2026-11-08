@@ -15,6 +15,8 @@ export type CredentialInput = z.infer<typeof credentialInputSchema>;
 
 // CSV import uploads in batches; the client chunks to IMPORT_BATCH_SIZE.
 export const IMPORT_BATCH_SIZE = 100;
+// Per-user storage cap. shortcut: count-then-insert isn't atomic, so parallel requests can overshoot by a batch; fine for abuse control.
+export const MAX_CREDENTIALS = 5000;
 export const credentialImportSchema = z.object({
   items: z.array(credentialInputSchema).min(1).max(IMPORT_BATCH_SIZE),
 });

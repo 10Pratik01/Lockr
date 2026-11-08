@@ -17,18 +17,18 @@ export function randomBytes(length: number): Uint8Array {
 export function toBase64(bytes: Uint8Array): string {
   if (typeof Buffer !== "undefined") return Buffer.from(bytes).toString("base64");
   let binary = "";
-  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  bytes.forEach((b) => (binary += String.fromCodePoint(b)));
   return btoa(binary);
 }
 
 export function fromBase64(value: string): Uint8Array {
   if (typeof Buffer !== "undefined") return new Uint8Array(Buffer.from(value, "base64"));
-  return Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
+  return Uint8Array.from(atob(value), (c) => c.codePointAt(0) ?? 0);
 }
 
 /** URL-safe base64, no padding -- safe to drop straight into a URL path segment. */
 export function toBase64Url(bytes: Uint8Array): string {
-  return toBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return toBase64(bytes).replaceAll("+", "-").replaceAll("/", "_").replace(/={1,2}$/, "");
 }
 
 /**

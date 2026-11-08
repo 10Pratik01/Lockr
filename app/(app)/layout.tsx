@@ -8,7 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 
 // Shared by every signed-in page. The VaultProvider lives here so the
 // unlocked vault survives navigation between dashboard, shares and settings.
-export default async function AppLayout({ children }: { children: ReactNode }) {
+export default async function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
   await requireSignedIn();
   // Decided on the server so ordinary users never poll the admin endpoint.
   const { userId } = await auth();

@@ -86,7 +86,7 @@ function useReducedMotion() {
 // Starts as `from`, churns through noise, then resolves left to right into
 // `to`. Deterministic (no Math.random) so renders stay pure; reduced motion
 // shows `to` straight away.
-function Morph({ from, to, ticks = 18 }: { from: string; to: string; ticks?: number }) {
+function Morph({ from, to, ticks = 18 }: Readonly<{ from: string; to: string; ticks?: number }>) {
   const reduced = useReducedMotion()
   const [t, setT] = useState(0)
 
@@ -108,7 +108,12 @@ function Morph({ from, to, ticks = 18 }: { from: string; to: string; ticks?: num
   )
 }
 
-function Screen({ label, children, stage }: { label: string; children: ReactNode; stage: number }) {
+function stationState(i: number, active: number) {
+  if (i < active) return 'done'
+  return i === active ? 'active' : 'todo'
+}
+
+function Screen({ label, children, stage }: Readonly<{ label: string; children: ReactNode; stage: number }>) {
   const status = STATUS[stage]
   return (
     <div className="rounded-xl border border-l-line bg-l-bg p-4 sm:p-5">
@@ -127,7 +132,7 @@ function Screen({ label, children, stage }: { label: string; children: ReactNode
   )
 }
 
-function Row({ i, name, children, muted }: { i: number; name: string; children: ReactNode; muted?: boolean }) {
+function Row({ i, name, children, muted }: Readonly<{ i: number; name: string; children: ReactNode; muted?: boolean }>) {
   return (
     <div
       className="flow-row grid grid-cols-[6.5rem_1fr] items-baseline gap-3"
@@ -139,7 +144,7 @@ function Row({ i, name, children, muted }: { i: number; name: string; children: 
   )
 }
 
-function StageScreen({ stage }: { stage: number }) {
+function StageScreen({ stage }: Readonly<{ stage: number }>) {
   if (stage === 0) {
     return (
       <Screen stage={0} label="Typed in your browser">
@@ -295,7 +300,7 @@ export function FlowDemo() {
         </div>
         <span className="flow-boundary" aria-hidden="true" />
 
-        <div role="tablist" aria-label="Encryption steps" onKeyDown={onKeyDown} className="flow-stations">
+        <div role="tablist" tabIndex={-1} aria-label="Encryption steps" onKeyDown={onKeyDown} className="flow-stations">
           {STAGES.map((s, i) => (
             <button
               key={s.label}
@@ -308,7 +313,7 @@ export function FlowDemo() {
               aria-selected={active === i}
               aria-controls="flow-panel"
               tabIndex={active === i ? 0 : -1}
-              data-state={i < active ? 'done' : i === active ? 'active' : 'todo'}
+              data-state={stationState(i, active)}
               data-last={i === STAGES.length - 1 ? '' : undefined}
               data-zone={s.zone}
               onClick={() => select(i)}

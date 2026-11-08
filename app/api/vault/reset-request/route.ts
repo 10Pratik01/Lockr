@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { resetRequestSchema } from "@/lib/validation/admin";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
@@ -14,6 +15,7 @@ const SELECT = { id: true, status: true, createdAt: true, decidedAt: true, expir
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
+  if (!(await checkRateLimit(RATE_LIMITS.read, user.id))) return tooManyRequests(RATE_LIMITS.read);
   const rows = await db.passphraseResetRequest.findMany({
     where: { userId: user.id },
     select: SELECT,
@@ -30,7 +32,7 @@ export async function POST(request: Request) {
   if (!user) return unauthorized();
   if (!(await checkRateLimit(RATE_LIMITS.resetRequest, user.id))) return tooManyRequests(RATE_LIMITS.resetRequest);
 
-  const body = await request.json().catch(() => ({}));
+  const body = ((await readJson(request)) ?? {});
   const parsed = resetRequestSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 

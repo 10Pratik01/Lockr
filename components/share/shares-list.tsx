@@ -77,11 +77,11 @@ export function SharesList() {
         <p className="text-sm text-zinc-500">One-time links you&apos;ve created. Active links can be revoked.</p>
       </div>
       <ErrorText>{error}</ErrorText>
-      {shares === null ? (
-        <ListSkeleton rows={3} />
-      ) : shares.length === 0 ? (
+      {shares === null && <ListSkeleton rows={3} />}
+      {shares?.length === 0 && (
         <Card className="py-12 text-center text-sm text-zinc-500">No shares yet. Use “Share” on a credential.</Card>
-      ) : (
+      )}
+      {shares && shares.length > 0 && (
         <ul className="grid grid-cols-[minmax(0,1fr)] gap-3">
           {shares.map((s, idx) => {
             const status = statusOf(s, now);

@@ -8,11 +8,11 @@ export function Reveal({
   children,
   className = '',
   threshold = 0.25,
-}: {
+}: Readonly<{
   children: React.ReactNode
   className?: string
   threshold?: number
-}) {
+}>) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -44,17 +44,23 @@ export function Reveal({
 }
 
 // Splits a heading into words that rise out of a clipped line, one after another.
-export function Words({ text, offset = 0 }: { text: string; offset?: number }) {
+export function Words({ text, offset = 0 }: Readonly<{ text: string; offset?: number }>) {
+  const words = text.split(' ')
+  const seen = new Map<string, number>()
   return (
     <>
-      {text.split(' ').map((w, i) => (
-        <span key={i} className="word-mask ">
+      {words.map((w, i) => {
+        const n = seen.get(w) ?? 0
+        seen.set(w, n + 1)
+        return (
+        <span key={`${w}:${n}`} className="word-mask ">
           <span className="word px-1" style={{ '--w': i + offset } as React.CSSProperties}>
             {w}
           </span>
-          {i < text.split(' ').length - 1 ? ' ' : ''}
+          {i < words.length - 1 ? ' ' : ''}
         </span>
-      ))}
+        )
+      })}
     </>
   )
 }

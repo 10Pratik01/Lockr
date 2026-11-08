@@ -13,10 +13,10 @@ const EMPTY: CredentialData = { site: "", url: "", username: "", password: "", n
 export function CredentialForm({
   existing,
   onDone,
-}: {
+}: Readonly<{
   existing?: DecryptedCredential;
   onDone: () => void;
-}) {
+}>) {
   const { save } = useVault();
   const toast = useToast();
   const [data, setData] = useState<CredentialData>(
@@ -46,6 +46,10 @@ export function CredentialForm({
       setBusy(false);
     }
   }
+
+  let submitLabel = "Save credential";
+  if (busy) submitLabel = "Encrypting…";
+  else if (existing) submitLabel = "Save changes";
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -120,7 +124,7 @@ export function CredentialForm({
           Cancel
         </Button>
         <Button type="submit" disabled={busy}>
-          {busy ? "Encrypting…" : existing ? "Save changes" : "Save credential"}
+          {submitLabel}
         </Button>
       </div>
     </form>

@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { randomInt } from "@/lib/crypto/random";
 
 export interface RateLimitRule {
   bucket: string;
@@ -22,6 +23,8 @@ export const RATE_LIMITS = {
   resetRequest: { bucket: "reset-request", limit: 5, windowSeconds: 3600 },
   resetExecute: { bucket: "reset-execute", limit: 5, windowSeconds: 3600 },
   adminAction: { bucket: "admin-action", limit: 60, windowSeconds: 60 },
+  // Generous: normal browsing never hits it; it just bounds scraping/hammering.
+  read: { bucket: "read", limit: 300, windowSeconds: 60 },
   auditEvent: { bucket: "audit-event", limit: 60, windowSeconds: 60 },
 } satisfies Record<string, RateLimitRule>;
 
@@ -38,9 +41,8 @@ let warnedUnavailable = false;
  * call: the window resets in the same statement that increments it, so
  * concurrent requests can't race past the limit.
  *
- * Fails open if the table is missing or the DB errors -- rate limiting is
- * abuse protection layered on top of the real controls (auth, ownership,
- * per-share attempt caps), and shouldn't take the app down.
+ * Fails closed if the table is missing or the DB errors: an outage must not
+ * switch off abuse protection (every route needs the DB anyway).
  */
 export async function checkRateLimit(rule: RateLimitRule, identifier: string): Promise<boolean> {
   const key = `${rule.bucket}:${createHash("sha256").update(identifier).digest("hex")}`;
@@ -58,9 +60,11 @@ export async function checkRateLimit(rule: RateLimitRule, identifier: string): P
       RETURNING "count"`;
 
     // Occasional cleanup of stale windows (~1% of calls), so the table stays
-    // small. Math.random is fine here: this is load sampling, not a secret.
-    if (Math.random() < 0.01) {
-      await db.rateLimit.deleteMany({ where: { windowStart: { lt: new Date(Date.now() - 86_400_000) } } });
+    // small.
+    if (randomInt(100) === 0) {
+      await db.rateLimit
+        .deleteMany({ where: { windowStart: { lt: new Date(Date.now() - 86_400_000) } } })
+        .catch(() => undefined); // housekeeping must not fail the request
     }
     return Number(rows[0]?.count ?? 0) <= rule.limit;
   } catch {
@@ -68,7 +72,7 @@ export async function checkRateLimit(rule: RateLimitRule, identifier: string): P
       warnedUnavailable = true;
       console.warn("Rate limiting unavailable (has the RateLimit migration been applied?)");
     }
-    return true;
+    return false;
   }
 }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { credentialInputSchema } from "@/lib/validation/vault";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
@@ -17,6 +18,7 @@ const unauthorized = () => NextResponse.json({ error: "Unauthorized" }, { status
 export async function GET(_request: Request, { params }: RouteContext) {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
+  if (!(await checkRateLimit(RATE_LIMITS.read, user.id))) return tooManyRequests(RATE_LIMITS.read);
 
   const { id } = await params;
 
@@ -40,7 +42,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 
   const { id } = await params;
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request);
   const parsed = credentialInputSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });

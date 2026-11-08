@@ -29,7 +29,7 @@ export function useAdminPending(enabled: boolean) {
           setPending(next.pending);
         })
         .catch(() => {});
-    tick();
+    void tick();
     const t = setInterval(tick, 30_000);
     return () => {
       stop = true;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { vaultKeyChangeSchema, vaultKeySchema } from "@/lib/validation/vault";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
@@ -22,6 +23,7 @@ const VAULT_KEY_SELECT = {
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
+  if (!(await checkRateLimit(RATE_LIMITS.read, user.id))) return tooManyRequests(RATE_LIMITS.read);
 
   const vault = await db.vault.findUnique({
     where: { userId: user.id },
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
     return tooManyRequests(RATE_LIMITS.vaultKeyWrite);
   }
 
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request);
   const parsed = vaultKeySchema.safeParse(body);
   if (!parsed.success) return invalid();
 
@@ -68,7 +70,7 @@ export async function PATCH(request: Request) {
     return tooManyRequests(RATE_LIMITS.vaultKeyWrite);
   }
 
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request);
   const parsed = vaultKeyChangeSchema.safeParse(body);
   if (!parsed.success) return invalid();
 

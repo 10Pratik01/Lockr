@@ -36,7 +36,7 @@ function Mark() {
   )
 }
 
-function PrimaryAction({ size = 'lg' }: { size?: 'sm' | 'lg' }) {
+function PrimaryAction({ size = 'lg' }: Readonly<{ size?: 'sm' | 'lg' }>) {
   const cls =
     size === 'lg'
       ? 'h-12 px-7 text-base'

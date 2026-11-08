@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 // Public: the recipient has no account. Nothing about the share is looked
 // up or rendered server-side -- the page only collects the OTP.
-export default async function SharePage({ params }: { params: Promise<{ token: string }> }) {
+export default async function SharePage({ params }: Readonly<{ params: Promise<{ token: string }> }>) {
   const { token } = await params;
   if (!/^[A-Za-z0-9_-]{43}$/.test(token)) notFound();
   return (

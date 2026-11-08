@@ -23,7 +23,7 @@ const DESTROY = "destroy";
 
 const expiryLabel = (m: number) => (m === 60 ? "1 hour" : `${m} minutes`);
 
-export function ShareDialogBody({ credential, onDone }: { credential: DecryptedCredential; onDone: () => void }) {
+export function ShareDialogBody({ credential, onDone }: Readonly<{ credential: DecryptedCredential; onDone: () => void }>) {
   const toast = useToast();
   const [choice, setChoice] = useState<string>(String(DEFAULT_SHARE_EXPIRY_MINUTES));
   const [created, setCreated] = useState<Created | null>(null);

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { getAdminUser } from "@/lib/auth/admin";
 import { resetDecisionSchema, RESET_APPROVAL_HOURS } from "@/lib/validation/admin";
 import { checkRateLimit, RATE_LIMITS, tooManyRequests } from "@/lib/rate-limit";
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
   if (!admin) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!(await checkRateLimit(RATE_LIMITS.adminAction, admin.id))) return tooManyRequests(RATE_LIMITS.adminAction);
 
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request);
   const parsed = resetDecisionSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   const { id, decision } = parsed.data;

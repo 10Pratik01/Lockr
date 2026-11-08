@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { shareVerifySchema } from "@/lib/validation/share";
 import { logAudit } from "@/lib/audit";
 import { hashShareToken, MAX_OTP_ATTEMPTS, verifyOtp } from "@/lib/share/server";
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
     return tooManyRequests(RATE_LIMITS.shareVerify);
   }
 
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request);
   const parsed = shareVerifySchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 

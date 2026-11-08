@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
+import { readJson } from "@/lib/read-json";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { shareCreateSchema } from "@/lib/validation/share";
 import { generateOtp, generateShareToken } from "@/lib/crypto/random";
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     return tooManyRequests(RATE_LIMITS.shareCreate);
   }
 
-  const body = await request.json().catch(() => null);
+  const body = await readJson(request);
   const parsed = shareCreateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 

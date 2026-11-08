@@ -99,7 +99,7 @@ export function Dashboard() {
         </p>
       )}
 
-      {credentials.length === 0 ? (
+      {credentials.length === 0 && (
         <div className="enter rounded-2xl border border-dashed border-zinc-300 px-6 py-20 text-center dark:border-zinc-700">
           <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-zinc-200 text-l-cipher dark:bg-zinc-800">
             <LockMark width={26} height={26} />
@@ -113,9 +113,11 @@ export function Dashboard() {
             Add your first credential
           </Button>
         </div>
-      ) : filtered.length === 0 ? (
+      )}
+      {credentials.length > 0 && filtered.length === 0 && (
         <p className="py-10 text-center text-sm text-zinc-500">No credentials match “{query}”.</p>
-      ) : (
+      )}
+      {filtered.length > 0 && (
         <ul className="grid grid-cols-[minmax(0,1fr)] gap-3">
           {filtered.map((c, i) => (
             <CredentialRow
@@ -189,14 +191,14 @@ function CredentialRow({
   onEdit,
   onShare,
   onDelete,
-}: {
+}: Readonly<{
   credential: DecryptedCredential;
   index: number;
   onCopy: (value: string, what: string) => void;
   onEdit: () => void;
   onShare: () => void;
   onDelete: () => void;
-}) {
+}>) {
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
   const host = hostOf(c.url);

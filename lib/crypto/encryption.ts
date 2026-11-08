@@ -11,8 +11,8 @@ export interface EncryptedPayload {
 }
 
 function getSubtle(): SubtleCrypto {
-  if (typeof globalThis.crypto?.subtle === "undefined") {
-    throw new Error("SubtleCrypto is not available in this runtime");
+  if (globalThis.crypto?.subtle === undefined) {
+    throw new TypeError("SubtleCrypto is not available in this runtime");
   }
   return globalThis.crypto.subtle;
 }

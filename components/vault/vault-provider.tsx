@@ -84,7 +84,7 @@ function subscribeAutoLock(onChange: () => void) {
   };
 }
 
-export function VaultProvider({ children }: { children: ReactNode }) {
+export function VaultProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [status, setStatus] = useState<VaultStatus>("loading");
   const [record, setRecord] = useState<VaultKeyInput | null>(null);
   const [credentials, setCredentials] = useState<DecryptedCredential[]>([]);

@@ -12,7 +12,7 @@ export interface MenuItem {
 }
 
 /** Overflow menu: click outside or Esc closes it, arrows move between items. */
-export function Menu({ items, label }: { items: MenuItem[]; label: string }) {
+export function Menu({ items, label }: Readonly<{ items: MenuItem[]; label: string }>) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const id = useId();
@@ -67,6 +67,7 @@ export function Menu({ items, label }: { items: MenuItem[]; label: string }) {
         <div
           id={id}
           role="menu"
+          tabIndex={-1}
           onKeyDown={onPanelKey}
           className="menu-panel absolute top-full right-0 z-20 mt-1 w-44 rounded-xl border border-zinc-200 bg-white p-1 shadow-[0_12px_32px_-12px_rgba(22,25,31,0.35)] dark:border-zinc-700 dark:bg-zinc-900"
         >

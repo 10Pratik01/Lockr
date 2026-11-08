@@ -9,7 +9,7 @@ import { ResetRequest } from "./reset-request";
 import { MIN_PASSPHRASE_LENGTH } from "@/lib/vault/keys";
 
 /** Renders children only while the vault is unlocked. */
-export function VaultGate({ children }: { children: ReactNode }) {
+export function VaultGate({ children }: Readonly<{ children: ReactNode }>) {
   const { status } = useVault();
 
   if (status === "loading") {
@@ -29,11 +29,11 @@ export function VaultGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-function Centered({ children }: { children: ReactNode }) {
+function Centered({ children }: Readonly<{ children: ReactNode }>) {
   return <div className="mx-auto w-full max-w-md py-16">{children}</div>;
 }
 
-function LockIcon({ open = false }: { open?: boolean }) {
+function LockIcon({ open = false }: Readonly<{ open?: boolean }>) {
   return (
     <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-zinc-200 text-l-cipher dark:bg-zinc-800">
       <LockMark width={26} height={26} open={open} />
@@ -49,14 +49,14 @@ function PassphraseField({
   onChange,
   autoComplete,
   autoFocus,
-}: {
+}: Readonly<{
   id: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
   autoComplete: string;
   autoFocus?: boolean;
-}) {
+}>) {
   const [shown, setShown] = useState(false);
   return (
     <div>
@@ -86,12 +86,12 @@ function PassphraseField({
 }
 
 /** Indeterminate bar for the Argon2id derivation, which takes a moment on purpose. */
-function Deriving({ text }: { text: string }) {
+function Deriving({ text }: Readonly<{ text: string }>) {
   return (
-    <div role="status" className="space-y-2">
+    <output className="block space-y-2">
       <div className="progress-bar relative h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800" />
       <p className="text-xs text-zinc-500">{text}</p>
-    </div>
+    </output>
   );
 }
 

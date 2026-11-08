@@ -18,7 +18,7 @@ const CLASSES: { name: CharsetName; label: string }[] = [
   { name: "symbols", label: "Symbols" },
 ];
 
-export function PasswordGenerator({ onUse }: { onUse: (password: string) => void }) {
+export function PasswordGenerator({ onUse }: Readonly<{ onUse: (password: string) => void }>) {
   const [options, setOptions] = useState<PasswordOptions>(DEFAULT_PASSWORD_OPTIONS);
   const [preview, setPreview] = useState("");
   const noneSelected = CLASSES.every((c) => !options[c.name]);

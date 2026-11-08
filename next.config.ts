@@ -17,15 +17,15 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  async headers() {
-    return [
+  headers() {
+    return Promise.resolve([
       { source: "/:path*", headers: securityHeaders },
       {
         // Never cache API responses -- they carry (encrypted) vault data.
         source: "/api/:path*",
         headers: [{ key: "Cache-Control", value: "no-store" }],
       },
-    ];
+    ]);
   },
 };
 
